@@ -28,8 +28,9 @@
 
 - (void) setupCouchbaseListener {
     CBLManager* manager = [CBLManager sharedInstance];
-    CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 0];
     NSError *error;
+    [manager databaseNamed:@"couchtalk" error:&error];
+    CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 59840];
     BOOL ok = [_listener start: &error];
     if (ok) {
         UInt16 actualPort = _listener.port;  // the actual TCP port it's listening on

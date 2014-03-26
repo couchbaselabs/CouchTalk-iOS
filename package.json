@@ -1,0 +1,28 @@
+{
+  "name": "CouchTalk-iOS",
+  "dependencies": {
+    "couchbase": "1.2.*",
+    "express": "3.4.*",
+    "async" : "0.2.10",
+    "request" : "~2.34.0",
+    "getusermedia" : "0.2.1",
+    "socket.io" : "0.9.*"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.6.3",
+    "grunt-contrib-uglify": "~0.2.7",
+    "grunt-react": "~0.6.0",
+    "browserify": "~3.19.1",
+    "grunt-browserify": "~1.3.0",
+    "grunt-newer": "~0.6.0",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-copy": "~0.5.0",
+    "grunt-node-tap": "~0.1.52",
+    "tap": "~0.4.8",
+    "tape": "~2.3.2",
+    "grunt-image-embed": "~0.3.1",
+    "grunt-express-server": "^0.4.13",
+    "grunt-notify": "^0.2.17"
+  }
+}
