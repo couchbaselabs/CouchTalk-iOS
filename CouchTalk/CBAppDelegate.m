@@ -7,6 +7,8 @@
 //
 
 #import "CBAppDelegate.h"
+#import <CouchbaseLite/CouchbaseLite.h>
+#import <CouchbaseLiteListener/CBLListener.h>
 
 @implementation CBAppDelegate
 
@@ -18,9 +20,25 @@
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
     }
+    
+    [self setupCouchbaseListener];
+    
     return YES;
 }
-							
+
+- (void) setupCouchbaseListener {
+    CBLManager* manager = [CBLManager sharedInstance];
+    CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 0];
+    NSError *error;
+    BOOL ok = [_listener start: &error];
+    if (ok) {
+        UInt16 actualPort = _listener.port;  // the actual TCP port it's listening on
+        NSLog(@"listening on %d", actualPort);
+    } else {
+        NSLog(@"Couchbase Lite listener not started");
+    }
+}
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

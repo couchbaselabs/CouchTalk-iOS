@@ -1,0 +1,1 @@
+pod 'couchbase-lite-ios', '~> 1.0-beta3'
