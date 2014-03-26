@@ -1,0 +1,492 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7903AA1518E33DFD00AC321C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1418E33DFD00AC321C /* Foundation.framework */; };
+		7903AA1718E33DFD00AC321C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1618E33DFD00AC321C /* CoreGraphics.framework */; };
+		7903AA1918E33DFD00AC321C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1818E33DFD00AC321C /* UIKit.framework */; };
+		7903AA1F18E33DFD00AC321C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7903AA1D18E33DFD00AC321C /* InfoPlist.strings */; };
+		7903AA2118E33DFD00AC321C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7903AA2018E33DFD00AC321C /* main.m */; };
+		7903AA2518E33DFD00AC321C /* CBAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7903AA2418E33DFD00AC321C /* CBAppDelegate.m */; };
+		7903AA2818E33DFD00AC321C /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7903AA2618E33DFD00AC321C /* Main_iPhone.storyboard */; };
+		7903AA2B18E33DFD00AC321C /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7903AA2918E33DFD00AC321C /* Main_iPad.storyboard */; };
+		7903AA2E18E33DFD00AC321C /* CBMasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7903AA2D18E33DFD00AC321C /* CBMasterViewController.m */; };
+		7903AA3118E33DFD00AC321C /* CBDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7903AA3018E33DFD00AC321C /* CBDetailViewController.m */; };
+		7903AA3318E33DFD00AC321C /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7903AA3218E33DFD00AC321C /* Images.xcassets */; };
+		7903AA3A18E33DFD00AC321C /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA3918E33DFD00AC321C /* XCTest.framework */; };
+		7903AA3B18E33DFD00AC321C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1418E33DFD00AC321C /* Foundation.framework */; };
+		7903AA3C18E33DFD00AC321C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1818E33DFD00AC321C /* UIKit.framework */; };
+		7903AA4418E33DFD00AC321C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7903AA4218E33DFD00AC321C /* InfoPlist.strings */; };
+		7903AA4618E33DFD00AC321C /* CouchTalkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7903AA4518E33DFD00AC321C /* CouchTalkTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7903AA3D18E33DFD00AC321C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7903AA0918E33DFD00AC321C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7903AA1018E33DFD00AC321C;
+			remoteInfo = CouchTalk;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		7903AA1118E33DFD00AC321C /* CouchTalk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CouchTalk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7903AA1418E33DFD00AC321C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		7903AA1618E33DFD00AC321C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		7903AA1818E33DFD00AC321C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		7903AA1C18E33DFD00AC321C /* CouchTalk-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CouchTalk-Info.plist"; sourceTree = "<group>"; };
+		7903AA1E18E33DFD00AC321C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7903AA2018E33DFD00AC321C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		7903AA2218E33DFD00AC321C /* CouchTalk-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CouchTalk-Prefix.pch"; sourceTree = "<group>"; };
+		7903AA2318E33DFD00AC321C /* CBAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBAppDelegate.h; sourceTree = "<group>"; };
+		7903AA2418E33DFD00AC321C /* CBAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBAppDelegate.m; sourceTree = "<group>"; };
+		7903AA2718E33DFD00AC321C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPhone.storyboard; sourceTree = "<group>"; };
+		7903AA2A18E33DFD00AC321C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPad.storyboard; sourceTree = "<group>"; };
+		7903AA2C18E33DFD00AC321C /* CBMasterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBMasterViewController.h; sourceTree = "<group>"; };
+		7903AA2D18E33DFD00AC321C /* CBMasterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBMasterViewController.m; sourceTree = "<group>"; };
+		7903AA2F18E33DFD00AC321C /* CBDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBDetailViewController.h; sourceTree = "<group>"; };
+		7903AA3018E33DFD00AC321C /* CBDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBDetailViewController.m; sourceTree = "<group>"; };
+		7903AA3218E33DFD00AC321C /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		7903AA3818E33DFD00AC321C /* CouchTalkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CouchTalkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7903AA3918E33DFD00AC321C /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		7903AA4118E33DFD00AC321C /* CouchTalkTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CouchTalkTests-Info.plist"; sourceTree = "<group>"; };
+		7903AA4318E33DFD00AC321C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7903AA4518E33DFD00AC321C /* CouchTalkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CouchTalkTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7903AA0E18E33DFD00AC321C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7903AA1718E33DFD00AC321C /* CoreGraphics.framework in Frameworks */,
+				7903AA1918E33DFD00AC321C /* UIKit.framework in Frameworks */,
+				7903AA1518E33DFD00AC321C /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7903AA3518E33DFD00AC321C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7903AA3A18E33DFD00AC321C /* XCTest.framework in Frameworks */,
+				7903AA3C18E33DFD00AC321C /* UIKit.framework in Frameworks */,
+				7903AA3B18E33DFD00AC321C /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7903AA0818E33DFD00AC321C = {
+			isa = PBXGroup;
+			children = (
+				7903AA1A18E33DFD00AC321C /* CouchTalk */,
+				7903AA3F18E33DFD00AC321C /* CouchTalkTests */,
+				7903AA1318E33DFD00AC321C /* Frameworks */,
+				7903AA1218E33DFD00AC321C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7903AA1218E33DFD00AC321C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7903AA1118E33DFD00AC321C /* CouchTalk.app */,
+				7903AA3818E33DFD00AC321C /* CouchTalkTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7903AA1318E33DFD00AC321C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7903AA1418E33DFD00AC321C /* Foundation.framework */,
+				7903AA1618E33DFD00AC321C /* CoreGraphics.framework */,
+				7903AA1818E33DFD00AC321C /* UIKit.framework */,
+				7903AA3918E33DFD00AC321C /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7903AA1A18E33DFD00AC321C /* CouchTalk */ = {
+			isa = PBXGroup;
+			children = (
+				7903AA2318E33DFD00AC321C /* CBAppDelegate.h */,
+				7903AA2418E33DFD00AC321C /* CBAppDelegate.m */,
+				7903AA2618E33DFD00AC321C /* Main_iPhone.storyboard */,
+				7903AA2918E33DFD00AC321C /* Main_iPad.storyboard */,
+				7903AA2C18E33DFD00AC321C /* CBMasterViewController.h */,
+				7903AA2D18E33DFD00AC321C /* CBMasterViewController.m */,
+				7903AA2F18E33DFD00AC321C /* CBDetailViewController.h */,
+				7903AA3018E33DFD00AC321C /* CBDetailViewController.m */,
+				7903AA3218E33DFD00AC321C /* Images.xcassets */,
+				7903AA1B18E33DFD00AC321C /* Supporting Files */,
+			);
+			path = CouchTalk;
+			sourceTree = "<group>";
+		};
+		7903AA1B18E33DFD00AC321C /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				7903AA1C18E33DFD00AC321C /* CouchTalk-Info.plist */,
+				7903AA1D18E33DFD00AC321C /* InfoPlist.strings */,
+				7903AA2018E33DFD00AC321C /* main.m */,
+				7903AA2218E33DFD00AC321C /* CouchTalk-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		7903AA3F18E33DFD00AC321C /* CouchTalkTests */ = {
+			isa = PBXGroup;
+			children = (
+				7903AA4518E33DFD00AC321C /* CouchTalkTests.m */,
+				7903AA4018E33DFD00AC321C /* Supporting Files */,
+			);
+			path = CouchTalkTests;
+			sourceTree = "<group>";
+		};
+		7903AA4018E33DFD00AC321C /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				7903AA4118E33DFD00AC321C /* CouchTalkTests-Info.plist */,
+				7903AA4218E33DFD00AC321C /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7903AA1018E33DFD00AC321C /* CouchTalk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7903AA4918E33DFD00AC321C /* Build configuration list for PBXNativeTarget "CouchTalk" */;
+			buildPhases = (
+				7903AA0D18E33DFD00AC321C /* Sources */,
+				7903AA0E18E33DFD00AC321C /* Frameworks */,
+				7903AA0F18E33DFD00AC321C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CouchTalk;
+			productName = CouchTalk;
+			productReference = 7903AA1118E33DFD00AC321C /* CouchTalk.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7903AA3718E33DFD00AC321C /* CouchTalkTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7903AA4C18E33DFD00AC321C /* Build configuration list for PBXNativeTarget "CouchTalkTests" */;
+			buildPhases = (
+				7903AA3418E33DFD00AC321C /* Sources */,
+				7903AA3518E33DFD00AC321C /* Frameworks */,
+				7903AA3618E33DFD00AC321C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7903AA3E18E33DFD00AC321C /* PBXTargetDependency */,
+			);
+			name = CouchTalkTests;
+			productName = CouchTalkTests;
+			productReference = 7903AA3818E33DFD00AC321C /* CouchTalkTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7903AA0918E33DFD00AC321C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = CB;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Chris Anderson";
+				TargetAttributes = {
+					7903AA3718E33DFD00AC321C = {
+						TestTargetID = 7903AA1018E33DFD00AC321C;
+					};
+				};
+			};
+			buildConfigurationList = 7903AA0C18E33DFD00AC321C /* Build configuration list for PBXProject "CouchTalk" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 7903AA0818E33DFD00AC321C;
+			productRefGroup = 7903AA1218E33DFD00AC321C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7903AA1018E33DFD00AC321C /* CouchTalk */,
+				7903AA3718E33DFD00AC321C /* CouchTalkTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7903AA0F18E33DFD00AC321C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7903AA2B18E33DFD00AC321C /* Main_iPad.storyboard in Resources */,
+				7903AA3318E33DFD00AC321C /* Images.xcassets in Resources */,
+				7903AA2818E33DFD00AC321C /* Main_iPhone.storyboard in Resources */,
+				7903AA1F18E33DFD00AC321C /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7903AA3618E33DFD00AC321C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7903AA4418E33DFD00AC321C /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7903AA0D18E33DFD00AC321C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7903AA2118E33DFD00AC321C /* main.m in Sources */,
+				7903AA2E18E33DFD00AC321C /* CBMasterViewController.m in Sources */,
+				7903AA3118E33DFD00AC321C /* CBDetailViewController.m in Sources */,
+				7903AA2518E33DFD00AC321C /* CBAppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7903AA3418E33DFD00AC321C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7903AA4618E33DFD00AC321C /* CouchTalkTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7903AA3E18E33DFD00AC321C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7903AA1018E33DFD00AC321C /* CouchTalk */;
+			targetProxy = 7903AA3D18E33DFD00AC321C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		7903AA1D18E33DFD00AC321C /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7903AA1E18E33DFD00AC321C /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		7903AA2618E33DFD00AC321C /* Main_iPhone.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7903AA2718E33DFD00AC321C /* Base */,
+			);
+			name = Main_iPhone.storyboard;
+			sourceTree = "<group>";
+		};
+		7903AA2918E33DFD00AC321C /* Main_iPad.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7903AA2A18E33DFD00AC321C /* Base */,
+			);
+			name = Main_iPad.storyboard;
+			sourceTree = "<group>";
+		};
+		7903AA4218E33DFD00AC321C /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7903AA4318E33DFD00AC321C /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		7903AA4718E33DFD00AC321C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7903AA4818E33DFD00AC321C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7903AA4A18E33DFD00AC321C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CouchTalk/CouchTalk-Prefix.pch";
+				INFOPLIST_FILE = "CouchTalk/CouchTalk-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		7903AA4B18E33DFD00AC321C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CouchTalk/CouchTalk-Prefix.pch";
+				INFOPLIST_FILE = "CouchTalk/CouchTalk-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		7903AA4D18E33DFD00AC321C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/CouchTalk.app/CouchTalk";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CouchTalk/CouchTalk-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "CouchTalkTests/CouchTalkTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		7903AA4E18E33DFD00AC321C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/CouchTalk.app/CouchTalk";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CouchTalk/CouchTalk-Prefix.pch";
+				INFOPLIST_FILE = "CouchTalkTests/CouchTalkTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7903AA0C18E33DFD00AC321C /* Build configuration list for PBXProject "CouchTalk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7903AA4718E33DFD00AC321C /* Debug */,
+				7903AA4818E33DFD00AC321C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7903AA4918E33DFD00AC321C /* Build configuration list for PBXNativeTarget "CouchTalk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7903AA4A18E33DFD00AC321C /* Debug */,
+				7903AA4B18E33DFD00AC321C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		7903AA4C18E33DFD00AC321C /* Build configuration list for PBXNativeTarget "CouchTalkTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7903AA4D18E33DFD00AC321C /* Debug */,
+				7903AA4E18E33DFD00AC321C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7903AA0918E33DFD00AC321C /* Project object */;
+}
