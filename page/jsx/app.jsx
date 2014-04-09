@@ -7,7 +7,8 @@
 
 var
   connectAudio = require("../js/recorder").connectAudio,
-  getUserMedia = require("getusermedia");
+  getUserMedia = require("getusermedia"),
+  coax = require("coax");
 
   module.exports.App = React.createClass({
   propTypes : {
@@ -31,9 +32,10 @@ var
     }
   },
   componentWillMount: function() {
-    // var socket = io.connect(location.origin)
-    // socket.on("message", this.gotMessage)
-    // this.setState({socket : socket})
+    var db = coax(location.origin + "/couchtalk");
+    db.changes(this.onChange);
+    window.coaxDb = db; //for debugging
+    this.setState({db : db})
   },
   gotMessage : function(message){
     var messages = this.state.messages;
@@ -111,10 +113,13 @@ var
     video.addClass("recording")
     video.data("keypressId", keypressId)
     this.setState({recording : true, pictureInterval : interval});
-    this.state.socket.emit("new-snap", {
+
+    this.state.db.post({
       keypressId : keypressId,
       session : this.state.session,
       room : this.props.id
+    }, function(err, ok){
+      // ok.id is where we are working
     })
   },
   stopRecord : function() {
@@ -389,11 +394,11 @@ var
       <header>
         {beg}
         <h4>Push to Talk <a href="http://www.couchbase.com/">Couchbase Demo</a></h4>
-        <video autoPlay width={160} height={120} />
-        <canvas style={{display : "none"}} width={320} height={240}/>
         <p><strong>Hold down the space bar</strong> while you are talking to record.
           <em>All messages are public. </em>
         </p>
+        <video autoPlay width={160} height={120} />
+        <canvas style={{display : "none"}} width={320} height={240}/>
         <label className="autoplay"><input type="checkbox" onChange={this.autoPlayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
         <label className="destruct"><input type="checkbox" onChange={this.selfDestructChanged} checked={this.state.selfDestruct}/>Erase my messages after <input type="text" size={4} onChange={this.selfDestructTTLChanged} value={this.state.selfDestructTTL}/> seconds</label>
