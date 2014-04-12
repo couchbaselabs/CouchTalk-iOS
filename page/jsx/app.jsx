@@ -493,7 +493,8 @@ exports.Index = React.createClass({
   },
   onSubmit : function(e){
     e.preventDefault();
-    document.location = "/talk/" + this.state.goRoom;
+    document.location += "#" + this.state.goRoom;
+    location.reload();
   },
   handleChange : function(e){
     this.setState({goRoom: e.target.value});
