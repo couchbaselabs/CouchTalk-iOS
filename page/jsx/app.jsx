@@ -349,7 +349,7 @@ var
       if (error) {return reloadError(error)}
       this.setupAudioVideo(rootNode, recorder)
       this.listenForSpaceBar()
-      this.state.socket.emit("join", {
+      this.state.socket.emit("join", {          // TODO: no longer using sockets, figure out where to emit events
         keypressId : this.state.session,
         session : this.state.session,
         room : this.props.id,
