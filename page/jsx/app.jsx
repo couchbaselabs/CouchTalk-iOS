@@ -31,6 +31,10 @@ var
       end : parseInt(end, 10)
     }
   },
+  onChange: function (e, d) {
+      // TODO: find where original change(/polling?) code was and connect to that instead
+      console.log("onChange:", d);
+  },
   componentWillMount: function() {
     var db = coax(location.origin + "/couchtalk");
     db.changes(this.onChange);
