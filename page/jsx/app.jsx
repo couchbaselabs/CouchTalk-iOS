@@ -409,7 +409,8 @@ var
         <br/>
         <label className="destruct"><input type="checkbox" onChange={this.selfDestructChanged} checked={this.state.selfDestruct}/>Erase my messages after <input type="text" size={4} onChange={this.selfDestructTTLChanged} value={this.state.selfDestructTTL}/> seconds</label>
 
-        {(oldestKnownMessage && oldestKnownMessage.snap.split('-')[2] !== '0') && <p><a onClick={this.loadEarlierMessages}>Load earlier messages.</a></p>}
+        // TODO: oldestKnownMessage now just has snapdata, re-enable when resolved
+        {(0 && oldestKnownMessage && oldestKnownMessage.snap.split('-')[2] !== '0') && <p><a onClick={this.loadEarlierMessages}>Load earlier messages.</a></p>}
 
         <aside>Invite people to join the conversation: <input className="shareLink" value={url}/> or <a href="/">Go to a new room.</a>
         </aside>
