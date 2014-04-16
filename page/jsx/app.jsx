@@ -348,20 +348,22 @@ var
     connectAudio(function(error, recorder) {
       if (error) {return reloadError(error)}
       this.setupAudioVideo(rootNode, recorder)
+      this.setState({recorder: recorder})
       this.listenForSpaceBar()
-      this.state.socket.emit("join", {          // TODO: no longer using sockets, figure out where to emit events
-        keypressId : this.state.session,
-        session : this.state.session,
-        room : this.props.id,
-        join : true
-      })
       if (this.state.start && this.state.end && this.state.autoplay) {
         this.playMessage(0)
       }
       setTimeout(function(){
         this.takeSnapshot(this.state.session)
       }.bind(this), 1000)
-      this.setState({recorder: recorder})
+      /*
+      this.state.socket.emit("join", {          // TODO: no longer using sockets, figure out where to emit events
+        keypressId : this.state.session,
+        session : this.state.session,
+        room : this.props.id,
+        join : true
+      })
+      */
     }.bind(this))
   },
   componentDidUpdate : function(oldProps, oldState){
