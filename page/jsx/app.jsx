@@ -32,7 +32,7 @@ var
     }
   },
   onChange: function (e, d) {
-      // TODO: find where original change(/polling?) code was and connect to that instead
+      // TODO: pass each message found in changes to this.gotMessage [may need to bind when setting cb? /or just move this logic inline]
       console.log("onChange:", d);
   },
   componentWillMount: function() {
