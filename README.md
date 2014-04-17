@@ -13,15 +13,26 @@ Then build the CouchApp which the iOS app will host:
     npm install grunt-cli grunt-couchapp coax couchapp
     node_modules/.bin/grunt build       # TBD: not needed with `grunt dev` below?
 
-Next get the iOS app running:
+Next get the iOS app stuff ready:
 
+    brew install ios-sim
     sudo gem install cocoapods
     pod install
+
+
+## Manual launch
+
+To run the app
     open CouchTalk.xcworkspace      # now Build+Go
 
 (Note the need to open the .xcworkspace file, if you use the .xcodeproj directly your builds will fail with `ld: library not found for -lPods`.)
 
-Now you should be able to start the "automatic build" helper, and open the simulator-served app:
+Now you should be able to start the "automatic install" helper, and open the simulator-served app:
 
     node_modules/.bin/grunt dev
     open http://localhost:59840/couchtalk/_design/app/index.html
+
+
+## Automatic launch
+
+Or just `npm start` which will launch everything (iOS app, CouchApp pusher, browser tab) automatically.
