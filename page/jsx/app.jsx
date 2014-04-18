@@ -407,12 +407,11 @@ var
         <canvas style={{display : "none"}} width={320} height={240}/>
         <label className="autoplay"><input type="checkbox" onChange={this.autoPlayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
-        <label className="destruct"><input type="checkbox" onChange={this.selfDestructChanged} checked={this.state.selfDestruct}/>Erase my messages after <input type="text" size={4} onChange={this.selfDestructTTLChanged} value={this.state.selfDestructTTL}/> seconds</label>
 
         // TODO: oldestKnownMessage now just has snapdata, re-enable when resolved
         {(0 && oldestKnownMessage && oldestKnownMessage.snap.split('-')[2] !== '0') && <p><a onClick={this.loadEarlierMessages}>Load earlier messages.</a></p>}
 
-        <aside>Invite people to join the conversation: <input className="shareLink" value={url}/> or <a href="/">Go to a new room.</a>
+        <aside>Invite people to join the conversation: <input className="shareLink" value={url} readOnly/> or <a href="/">Go to a new room.</a>
         </aside>
 
         <RecentRooms id={this.props.id}/>
