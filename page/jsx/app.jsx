@@ -108,7 +108,7 @@ exports._coaxModule = require("coax");      // HACK: for whatever reason build p
         data : urlParts[3]
       };
       return obj;
-    }, {});
+    }, item._attachments || {});
     this.props.db.post(item, function (e) {
       if (e) throw e;
     });
