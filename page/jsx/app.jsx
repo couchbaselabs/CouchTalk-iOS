@@ -7,14 +7,140 @@
 
 var
   connectAudio = require("../js/recorder").connectAudio,
-  getUserMedia = require("getusermedia"),
-  coax = require("coax");
+  getUserMedia = require("getusermedia");
+
+exports._coaxModule = require("coax");      // HACK: for whatever reason build process doesn't let main.js require 'coax' directly…
 
   module.exports.App = React.createClass({
   propTypes : {
-    id : React.PropTypes.string.isRequired,
+    db: React.PropTypes.func.isRequired,
+    room : React.PropTypes.string.isRequired,
+    client : React.PropTypes.string.isRequired,
+    snapshotInterval: React.PropTypes.number
   },
-  getInitialState : function(){
+  getDefaultProps : function() {
+    return {
+      snapshotInterval : 250    // init as `Infinity` to disable
+    };
+  },
+  getInitialState : function () {
+    return {
+      recording : false,
+      messages : []
+    };
+  },
+  componentWillMount : function () {
+    this.props.db.changes({since:'now', include_docs:true}, function (e,d) {
+      if (e) throw e;   // TODO: what?
+      this.integrateDocIntoMessages(d.doc);
+    }.bind(this));
+  },
+  componentDidMount : function (rootNode) {
+    connectAudio(function(e, webcam) {
+      if (e) return reloadError(e);
+      webcam.dom_streamURL = window.URL.createObjectURL(webcam.stream)
+      this.setupSpacebarRecording();
+      this.setState({webcam : webcam});
+    }.bind(this))
+  },
+  
+  integrateDocIntoMessages : function (doc) {
+    var messages = this.state.messages.map(function (message) {
+      
+    });
+    this.setState({messages : messages});
+  },
+  setupSpacebarRecording : function () {
+    var spacebar = ' '.charCodeAt(0),
+        session = null;
+    window.onkeydown = function (evt) {
+      if (evt.repeat) return;
+      var key = evt.keyCode || evt.which;
+      if (key === spacebar) {
+        evt.preventDefault();
+        session = this.startRecording();
+      }
+    }.bind(this);
+    window.onkeyup = function (evt) {
+      var key = evt.keyCode || evt.which;
+      if (key === spacebar) {
+        this.stopRecording(session);
+      }
+    }.bind(this);
+  },
+  
+  startRecording : function () {
+    if (this.state.recording) throw Error("Recording started while already in progress!");
+    
+    var session = {},
+        msgId = "msg:"+Math.random().toString(20),
+        picNo = 0;
+    session.messageId = msgId;
+    session.snapshotTimer = setInterval(function () {
+      this.saveSnapshot(msgId, picNo++)
+    }.bind(this), this.props.snapshotInterval);
+    this.saveSnapshot(msgId, picNo++);
+    this.state.webcam.record();
+    this.setState({recording : true});
+    return session;
+  },
+  stopRecording : function (session) {
+    if (!this.state.recording) throw Error("Recording stopped while not in progress!");
+    
+    clearInterval(session.snapshotTimer);
+    var recorder = this.state.webcam;
+    recorder.stop();
+    recorder.exportMonoWAV(this.saveAudio.bind(this, session.messageId));
+    recorder.clear();
+    this.setState({recording : false});
+  },
+  
+  saveItemToRoom : function (fields, atts) {    // atts [optional] uses keys for name, expects data url in values
+    var item = $.extend({
+      room : this.props.room,
+      client : this.props.client,
+      timestamp : new Date().toISOString()
+    }, fields);
+    if (atts) item._attachments = Object.keys(atts).reduce(function (obj, name) {
+      var urlParts = atts[name].split(/[,;:]/);
+      obj[name] = {
+        content_type : urlParts[1],
+        data : urlParts[3]
+      };
+      return obj;
+    }, {});
+    this.props.db.post(item, function (e) {
+      if (e) throw e;
+    });
+  },
+  
+  saveSnapshot : function (msgId, picNo) {
+    var $node = $(this.getDOMNode()),
+        video = $node.find('video')[0],
+        ctx = $node.find('canvas')[0].getContext('2d');
+    ctx.drawImage(video, 0,0, ctx.width,ctx.height);
+    
+    var snapshot = ctx.canvas.toDataURL("image/jpeg");
+    this.saveItemToRoom({
+      message : msgId,
+      snapshotNumber : picNo
+    }, {snapshot : snapshot});
+  },
+  
+  saveAudio : function (msgId, wav) {
+    var reader = new FileReader();
+    reader.readAsDataURL(wav);
+    reader.onerror = function () {
+      throw reader.error;
+    };
+    reader.onloadend = function () {
+      this.saveItemToRoom({
+        message : msgId
+      }, {audio : reader.result});
+    }.bind(this);
+  },
+  
+  old_getInitialState : function(){
     // console.log($.fn.cookie("autoplay"), $.fn.cookie("selfDestruct"), $.fn.cookie("selfDestructTTL"))
     var start = getQueryVariable("start");
     var end = getQueryVariable("end");
@@ -30,16 +156,6 @@ var
       start : parseInt(start, 10),
       end : parseInt(end, 10)
     }
-  },
-  onChange: function (e, d) {
-      // TODO: pass each message found in changes to this.gotMessage [may need to bind when setting cb? /or just move this logic inline]
-      console.log("onChange:", d);
-  },
-  componentWillMount: function() {
-    var db = coax(location.origin + "/couchtalk");
-    db.changes(this.onChange);
-    window.coaxDb = db; //for debugging
-    this.setState({db : db})
   },
   gotMessage : function(message){
     var messages = this.state.messages;
@@ -88,23 +204,7 @@ var
       }
     }
   },
-  listenForSpaceBar : function(){
-    // record while spacebar is down
-    window.onkeydown = function (e) {
-      var code = e.keyCode ? e.keyCode : e.which;
-      if (code === 32) { //spacebar
-        e.preventDefault()
-        this.startRecord("kp:"+Math.random().toString(20))
-      }
-    }.bind(this);
-    window.onkeyup = function (e) {
-      var code = e.keyCode ? e.keyCode : e.which;
-      if (code === 32) { // spacebar
-        this.stopRecord()
-      }
-    }.bind(this);
-  },
-  startRecord : function(keypressId) {
+  old_startRecord : function(keypressId) {
     if (this.state.recording) return;
     // console.log("startRecord",keypressId)
     this.state.recorder.record()
@@ -146,7 +246,7 @@ var
     this.setState({recording : false})
     // console.log("stopped recording", keypressId)
   },
-  saveAudio : function(keypressId, wav){
+  old_saveAudio : function(keypressId, wav){
     this.messageWithIdForKeypress(keypressId,
       function(message){
       var reader = new FileReader(),
@@ -218,7 +318,7 @@ var
       this.setState({messages : messages});
     }
   },
-  saveSnapshot : function(png, keypressId, counter){
+  old_saveSnapshot : function(png, keypressId, counter){
     // make locally available before saved on server
     this.saveLocalSnapshot(png, keypressId)
 
@@ -303,11 +403,6 @@ var
       this.setState({nowPlaying : false})
     }
   },
-  setupAudioVideo : function(rootNode, recorder){
-    var video = $(rootNode).find("video")[0]
-    video.muted = true;
-    video.src = window.URL.createObjectURL(recorder.stream)
-  },
   autoPlayChanged : function(e){
     $.fn.cookie('autoplay', e.target.checked.toString(), {path : "/"});
     this.setState({autoplay: e.target.checked})
@@ -341,7 +436,7 @@ var
     }
     this.setState({messages : oldMessages.concat(this.state.messages)})
   },
-  componentDidMount : function(rootNode){
+  old_componentDidMount : function(rootNode){
     if (this.state.start && this.state.end) {
       this.loadConversation(this.state.start, this.state.end)
     }
@@ -403,7 +498,7 @@ var
         <p><strong>Hold down the space bar</strong> while you are talking to record.
           <em>All messages are public. </em>
         </p>
-        <video autoPlay width={160} height={120} />
+        <video autoPlay muted width={160} height={120} className={(this.state.recording) ? 'recording' : ''} src={this.state.webcam && this.state.webcam.dom_streamURL}/>
         <canvas style={{display : "none"}} width={320} height={240}/>
         <label className="autoplay"><input type="checkbox" onChange={this.autoPlayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
