@@ -482,7 +482,6 @@ var RecentRooms = React.createClass({
         <h4>Recent Rooms <a onClick={this.clearHistory}>(Clear)</a></h4>
         <ul>{
           this.state.sortedRooms.map(function(room){
-            console.log(room[0], room[1])
             var href = "/talk/"+room[0]
             return <li key={room[0]}><a href={href}>{room[0]}</a></li>
           }, this)
