@@ -27,6 +27,6 @@
     "foreman": "^0.3.0"
   },
   "scripts": {
-    "start": "APP_WAIT=30 nf start dev_watcher=1,dev_phone=1,dev_open=1 -e /dev/null"
+    "start": "APP_WAIT=30 nf start dev_watcher=1,dev_phone=1,dev_open=0 -e /dev/null"
   }
 }
