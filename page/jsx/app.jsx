@@ -4,8 +4,9 @@
  /* global $ */
  /* global io */
  
- 
- // TODO: [things that were in old code] snapshot when joining, proper "load older", conversation view (start/end), message destruction, autoplay/scroll-into-view
+// TODO: [things that were in old code] snapshot when joining, proper "load older", autoplay/scroll-into-view
+// postpone: conversation view (start/end)
+// forget: message destruction
 
 
 var
@@ -242,14 +243,51 @@ var BASE_URL = "/couchtalk/";     // HACK/TODO: get this out of coax somehow (pa
 var Message = React.createClass({
   propTypes : {
     message: React.PropTypes.object.isRequired,
-    // TODO: playback coordination callbacks
+    playbackRequested: React.PropTypes.func,
+    playbackDone: React.PropTypes.func
   },
+  getInitialState : function () {
+    return {
+      percentProgress : 0
+    };
+  },
+  
+  componentDidMount : function () {
+    var audio = this.audioElement();
+    audio.ontimeupdate = function () {
+      this.setState({percentProgress: audio.currentTime / audio.duration});
+    }.bind(this);
+    audio.onended = function () {
+      this.stop();
+      if (this.props.playbackDone) this.props.playbackDone(this);
+    }.bind(this);
+  },
+  play : function () {
+    var audio = this.audioElement();
+    if (audio.currentTime) audio.currentTime = 0;
+    audio.play();
+  },
+  stop : function () {
+    var audio = this.audioElement();
+    audio.pause();
+    this.setState({percentProgress:0});   // go back to first thumbail
+  },
+  audioElement : function () {
+    // TODO: make sure memoizing like this doesn't bring harm to The Way of React or something…
+    return this._audioElement || (this._audioElement = $(this.getDOMNode()).find('audio')[0]);
+  },
+  
   render : function () {
-    var message = this.props.message;
+    var message = this.props.message,
+        snapIdx = Math.round(this.state.percentProgress * (message.snaps.length - 1));
+try {
+var audio = this.audioElement();
+console.log("SNAP IDX:", snapIdx, audio.currentTime, audio.duration, message.snaps.length);
+} catch(e){}
     return (<li key={message.key}>
-        <img src={BASE_URL+message.snaps[0]}/>
-        <audio src={BASE_URL+message.audio}/>
-      </li>)
+        <img src={BASE_URL+message.snaps[snapIdx]} onClick={this.props.playbackRequested}/>
+        <audio preload="auto" src={BASE_URL+message.audio}/>
+      </li>);
   }
 });
 
