@@ -90,10 +90,22 @@ module.exports.App = React.createClass({
         snaps: [],
         audio: null
       };
+      if (doc.client === this.props.client) {
+        // when recording, bump autoplay cursor up past our own message
+        message.lastPlayed = true;
+        this.state.messages.forEach(function (msg) {
+          msg.playing = false;
+          msg.lastPlayed = false;
+        });
+      }
       messages.push(messages._byKey[message.key] = message);
     }
     
     if ('snapshotNumber' in doc) {
+      if (doc.snapshotNumber === 'join') {
+        message.justJoining = true;
+        doc.snapshotNumber = 0;
+      }
       message.snaps[doc.snapshotNumber] = [this.props.db.url, doc._id, 'snapshot'].join('/');
     } else {    // assume it's the recording instead
       message.audio = [this.props.db.url, doc._id, 'audio'].join('/');
@@ -219,7 +231,7 @@ module.exports.App = React.createClass({
         prevWasLastPlayed = false;
     messages.forEach(function (msg) {
       if (msg.lastPlayed) prevWasLastPlayed = true;
-      else if (prevWasLastPlayed) {
+      else if (prevWasLastPlayed && !msg.justJoining) {
         if (msg.audio) msg.playing = true;
         prevWasLastPlayed = false;
       }
@@ -266,6 +278,17 @@ window.dbgMessages = this.state.messages;
       </ul>
       </div>
       );
+  },
+  
+  componentDidUpdate : function () {
+    // HACK: send initial snapshot once webcam is connected
+    var video = this.refs.localPreview.getDOMNode();
+    if (video.src && !this._tookSnapshot) {
+      this._tookSnapshot = true;
+      setTimeout(function () {
+        this.saveSnapshot("hello:"+Math.random().toString(20), 'join');
+      }.bind(this), 250);
+    }
   }
 });
 
