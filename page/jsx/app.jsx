@@ -99,7 +99,6 @@ module.exports.App = React.createClass({
       message.audio = [this.props.db.url, doc._id, 'audio'].join('/');
     }
     
-window.dbgMessages = messages;
     this.setState({messages : messages});
   },
   
@@ -197,14 +196,21 @@ window.dbgMessages = messages;
     }.bind(this);
   },
   
-  manualPlayback : function (child) {
-    if (this.state.currentlyPlayingChild) this.state.currentlyPlayingChild.stop();
-    child.play();
-    this.setState({currentlyPlayingChild : child});
+  manualPlayback : function (msgKey) {
+    var messages = this.state.messages;
+    messages.forEach(function (msg) {
+      msg.playing = (msg.key === msgKey);
+    });
+    this.setState({messages : messages});
   },
   
-  playbackFinished : function (child) {
-    this.setState({lastPlayedChild : child, currentlyPlayingChild : null});
+  playbackFinished : function (msgKey) {
+    var messages = this.state.messages;
+    messages.forEach(function (msg) {
+      msg.playing = false;
+      msg.lastPlayed = (msg.key === msgKey);
+    });
+    this.setState({messages : messages});
   },
   
   updateAutoPlayback : function (msgObj) {
@@ -214,10 +220,7 @@ window.dbgMessages = messages;
   },
   
   render : function() {
-    //var messageToPlay;
-    //this.state.messages
-    
-  
+window.dbgMessages = this.state.messages;
     var url = window.location;
     var recording = (this.state.recording) ?
       <span className="recording">Recording.</span> :
@@ -271,14 +274,17 @@ var Message = React.createClass({
     };
   },
   
+  handleClick : function () {
+    if (this.props.onPlaybackRequested) this.props.onPlaybackRequested(this.props.message.key);
+  },
+  
   componentDidMount : function () {
     var audio = this.refs.audio.getDOMNode();
     audio.ontimeupdate = function () {
       this.setState({percentProgress: audio.currentTime / audio.duration});
     }.bind(this);
     audio.onended = function () {
-      this.stop();
-      if (this.props.onPlaybackDone) this.props.onPlaybackDone(this);
+      if (this.props.onPlaybackDone) this.props.onPlaybackDone(this.props.message.key);
     }.bind(this);
     audio.onerror = function () {
       console.warn("AUDIO ERROR!", audio.error, audio);
@@ -288,20 +294,6 @@ var Message = React.createClass({
       }
     }
   },
-  play : function () {
-    var audio = this.refs.audio.getDOMNode();
-    if (audio.currentTime) audio.currentTime = 0;
-    audio.play();
-  },
-  stop : function () {
-    var audio = this.refs.audio.getDOMNode();
-    audio.pause();
-    audio.currentTime = 0;      // go back to first thumbail
-  },
-  
-  handleClick : function () {
-    if (this.props.onPlaybackRequested) this.props.onPlaybackRequested(this);
-  },
   
   render : function () {
     var message = this.props.message,
@@ -310,6 +302,21 @@ var Message = React.createClass({
         <img src={message.snaps[snapIdx]} onClick={this.handleClick}/>
         <audio preload="auto" src={message.audio} ref="audio"/>
       </li>);
+  },
+  
+  componentDidUpdate : function () {
+    // we can't use this.refs in render, so must update playback state separately
+    var message = this.props.message,
+        audio = this.refs.audio.getDOMNode(),
+        audioPlaying = !(audio.paused || audio.ended);
+    console.log("MESSAGE PLAYING", message.playing, "AUDIO PLAYING", audioPlaying);
+    if (message.playing && !audioPlaying) {
+      if (audio.currentTime) audio.currentTime = 0;
+      audio.play();
+    } else if (!message.playing && audioPlaying) {
+      audio.pause();
+      audio.currentTime = 0;      // go back to first thumbail
+    }
   }
 });
 
