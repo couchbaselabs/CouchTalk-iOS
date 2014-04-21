@@ -60,7 +60,9 @@ module.exports.App = React.createClass({
   getInitialState : function () {
     return {
       recording : false,
-      messages : $.extend([], {_byKey:Object.create(null)})
+      messages : $.extend([], {_byKey:Object.create(null)}),
+      currentlyPlayingChild : null,
+      lastPlayedChild : null
     };
   },
   componentWillMount : function () {
@@ -195,9 +197,14 @@ window.dbgMessages = messages;
     }.bind(this);
   },
   
-  manualPlayback : function (msgObj) {
-console.log("PLAYBACK", this, arguments);
-    msgObj.play();
+  manualPlayback : function (child) {
+    if (this.state.currentlyPlayingChild) this.state.currentlyPlayingChild.stop();
+    child.play();
+    this.setState({currentlyPlayingChild : child});
+  },
+  
+  playbackFinished : function (child) {
+    this.setState({lastPlayedChild : child, currentlyPlayingChild : null});
   },
   
   updateAutoPlayback : function (msgObj) {
@@ -207,6 +214,10 @@ console.log("PLAYBACK", this, arguments);
   },
   
   render : function() {
+    //var messageToPlay;
+    //this.state.messages
+    
+  
     var url = window.location;
     var recording = (this.state.recording) ?
       <span className="recording">Recording.</span> :
@@ -240,7 +251,7 @@ console.log("PLAYBACK", this, arguments);
       </header>
       <ul className="messages">
         {this.state.messages.map(function (m) {
-          return <Message message={m} key={m.key} onPlaybackRequested={this.manualPlayback} onPlaybackDone={this.updateAutoPlayback}/>
+          return <Message message={m} key={m.key} onPlaybackRequested={this.manualPlayback} onPlaybackDone={this.playbackFinished} ref="testing"/>
         }, this)}
       </ul>
       </div>
@@ -285,7 +296,7 @@ var Message = React.createClass({
   stop : function () {
     var audio = this.refs.audio.getDOMNode();
     audio.pause();
-    this.setState({percentProgress:0});   // go back to first thumbail
+    audio.currentTime = 0;      // go back to first thumbail
   },
   
   handleClick : function () {
