@@ -66,8 +66,8 @@ module.exports.App = React.createClass({
   componentWillMount : function () {
     this.props.db.changes({since:'now', include_docs:true}, function (e,d) {
       if (e) throw e;   // TODO: what?
-      if (d.doc.type !== ITEM_TYPE && d.doc.room !== this.props.room) return;
-      else if (d.doc.client === this.props.client) return;
+      else if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
+      else if (d.doc.client === this.props.client) return;      // already directly integrated
       else this.integrateItemIntoMessages(d.doc);
     }.bind(this));
   },
