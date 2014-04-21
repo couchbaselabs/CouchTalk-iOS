@@ -77,7 +77,7 @@ module.exports.App = React.createClass({
       if (e) return reloadError(e);
       this.setupSpacebarRecording();
       this.setState({webcam : webcam, webcamStreamURL : window.URL.createObjectURL(webcam.stream)});
-    }.bind(this))
+    }.bind(this));
   },
   
   integrateItemIntoMessages : function (doc) {
@@ -282,10 +282,6 @@ window.dbgMessages = this.state.messages;
       </ul>
       </div>
       );
-  },
-  
-  componentDidMount : function () {
-    this.componentDidUpdate();      // call after initial render too, just in case
   },
   
   componentDidUpdate : function () {
