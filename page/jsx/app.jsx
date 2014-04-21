@@ -171,9 +171,8 @@ module.exports.App = React.createClass({
   },
   
   saveSnapshot : function (msgId, picNo) {
-    var $node = $(this.getDOMNode()),
-        video = $node.find('video')[0],
-        ctx = $node.find('canvas')[0].getContext('2d');
+    var video = this.refs.localPreview.getDOMNode(),
+        ctx = this.refs.snapshotContext.getDOMNode().getContext('2d');
     ctx.drawImage(video, 0,0, ctx.canvas.width,ctx.canvas.height);
     
     var snapshot = ctx.canvas.toDataURL("image/jpeg");
@@ -244,8 +243,8 @@ window.dbgMessages = this.state.messages;
         <p><strong>Hold down the space bar</strong> while you are talking to record.
           <em>All messages are public. </em>
         </p>
-        <video autoPlay muted width={160} height={120} className={(this.state.recording) ? 'recording' : ''} src={this.state.webcamStreamURL}/>
-        <canvas style={{display : "none"}} width={320} height={240}/>
+        <video ref="localPreview" autoPlay muted width={160} height={120} className={(this.state.recording) ? 'recording' : ''} src={this.state.webcamStreamURL}/>
+        <canvas ref="snapshotContext" style={{display : "none"}} width={320} height={240}/>
         <label className="autoplay"><input type="checkbox" onChange={this.autoPlayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
         
