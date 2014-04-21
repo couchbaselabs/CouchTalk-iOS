@@ -61,6 +61,7 @@ module.exports.App = React.createClass({
   getInitialState : function () {
     return {
       recording : false,
+      autoplay : $.fn.cookie('autoplay') !== "0",
       messages : $.extend([], {_byKey:Object.create(null)})
     };
   },
@@ -229,8 +230,15 @@ module.exports.App = React.createClass({
     this.setState({messages : messages});
   },
   
+  autoplayChanged : function (evt) {
+    var autoplay = evt.target.checked;
+    $.fn.cookie('autoplay', (autoplay) ? '1' : '0', {path : "/"});
+    this.setState({autoplay : autoplay});
+  },
+  
   componentWillUpdate : function (nextProps, nextState) {
     // BIG HACK: any time messages change we want to also sneak in any autoplay changes
+    if (!nextState.autoplay) return;
     var messages = nextState.messages,
         prevWasLastPlayed = false;
     messages.forEach(function (msg) {
@@ -261,7 +269,7 @@ window.dbgMessages = this.state.messages;
         </p>
         <video ref="localPreview" autoPlay muted width={160} height={120} className={(this.state.recording) ? 'recording' : ''} src={this.state.webcamStreamURL}/>
         <canvas ref="snapshotContext" style={{display : "none"}} width={320} height={240}/>
-        <label className="autoplay"><input type="checkbox" onChange={this.autoPlayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
+        <label className="autoplay"><input type="checkbox" onChange={this.autoplayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
         
         // TODO: this still needs to be updated (alongside workaround for missing `_changes?since=now`)
