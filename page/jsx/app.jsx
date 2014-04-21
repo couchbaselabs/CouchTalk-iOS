@@ -213,10 +213,17 @@ module.exports.App = React.createClass({
     this.setState({messages : messages});
   },
   
-  updateAutoPlayback : function (msgObj) {
-    // messages in desired order
-    // state: [pic, ]old, own, new
-    
+  componentWillUpdate : function (nextProps, nextState) {
+    // BIG HACK: any time messages change we want to also sneak in any autoplay changes
+    var messages = nextState.messages,
+        prevWasLastPlayed = false;
+    messages.forEach(function (msg) {
+      if (msg.lastPlayed) prevWasLastPlayed = true;
+      else if (prevWasLastPlayed) {
+        msg.playing = true;
+        prevWasLastPlayed = false;
+      }
+    });
   },
   
   render : function() {
