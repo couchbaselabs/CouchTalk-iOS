@@ -4,7 +4,7 @@
  /* global $ */
  /* global io */
  
-// TODO: [things that were in old code] snapshot when joining, proper "load older", autoplay/scroll-into-view
+// TODO: proper "load older", autoplay/scroll-into-view
 // postpone: conversation view (start/end)
 // forget: message destruction
 
@@ -230,8 +230,8 @@ module.exports.App = React.createClass({
         prevWasLastPlayed = false;
     messages.forEach(function (msg) {
       if (msg.lastPlayed) prevWasLastPlayed = true;
-      else if (prevWasLastPlayed && !msg.justJoining) {
-        if (msg.audio) msg.playing = true;
+      else if (prevWasLastPlayed) {
+        if (msg.audio || msg.justJoining) msg.playing = true;
         prevWasLastPlayed = false;
       }
     });
@@ -303,8 +303,11 @@ var Message = React.createClass({
     };
   },
   
-  handleClick : function () {
+  requestPlayback : function () {
     if (this.props.onPlaybackRequested) this.props.onPlaybackRequested(this.props.message.key);
+  },
+  notifyFinished : function () {
+    if (this.props.onPlaybackDone) this.props.onPlaybackDone(this.props.message.key);
   },
   
   componentDidMount : function () {
@@ -312,9 +315,7 @@ var Message = React.createClass({
     audio.ontimeupdate = function () {
       this.setState({percentProgress: audio.currentTime / audio.duration});
     }.bind(this);
-    audio.onended = function () {
-      if (this.props.onPlaybackDone) this.props.onPlaybackDone(this.props.message.key);
-    }.bind(this);
+    audio.onended = this.notifyFinished;
     audio.onerror = function () {
       console.warn("AUDIO ERROR!", audio.error, audio);
       if (audio.error.code === window.MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED && audio.src.indexOf('?') === -1) {
@@ -348,7 +349,10 @@ var Message = React.createClass({
     var message = this.props.message,
         audio = this.refs.audio.getDOMNode(),
         audioPlaying = !(audio.paused || audio.ended);
-    if (message.playing && !audioPlaying) {
+    if (message.playing && message.justJoining) {
+      this.notifyFinished();
+    } else if (message.playing && !audioPlaying) {
+      audio.parentNode.scrollIntoView();
       if (audio.currentTime) audio.currentTime = 0;
       audio.play();
     } else if (!message.playing && audioPlaying) {
