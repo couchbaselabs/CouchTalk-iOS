@@ -92,9 +92,9 @@ module.exports.App = React.createClass({
     }
     
     if ('snapshotNumber' in doc) {
-      message.snaps[doc.snapshotNumber] = [doc._id, 'snapshot'].join('/');
+      message.snaps[doc.snapshotNumber] = [this.props.db.url, doc._id, 'snapshot'].join('/');
     } else {    // assume it's the recording instead
-      message.audio = [doc._id, 'audio'].join('/');
+      message.audio = [this.props.db.url, doc._id, 'audio'].join('/');
     }
     
 window.dbgMessages = messages;
@@ -248,8 +248,6 @@ console.log("PLAYBACK", this, arguments);
   }
 });
 
-var BASE_URL = "/couchtalk/";     // HACK/TODO: get this out of coax somehow (passed through App object) instead
-
 var Message = React.createClass({
   propTypes : {
     message: React.PropTypes.object.isRequired,
@@ -298,8 +296,8 @@ var Message = React.createClass({
     var message = this.props.message,
         snapIdx = Math.round(this.state.percentProgress * (message.snaps.length - 1));
     return (<li key={message.key}>
-        <img src={BASE_URL+message.snaps[snapIdx]} onClick={this.handleClick}/>
-        <audio preload="auto" src={BASE_URL+message.audio} ref="audio"/>
+        <img src={message.snaps[snapIdx]} onClick={this.handleClick}/>
+        <audio preload="auto" src={message.audio} ref="audio"/>
       </li>);
   }
 });
