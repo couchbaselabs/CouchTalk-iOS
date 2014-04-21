@@ -156,8 +156,9 @@ img.ondeck {
 }
 
 ul.messages li img.joined {
-  border: 4px solid #ff0;
-  border-style: dotted !important;
+  width: 80px;
+  height: 60px;
+  padding: 40px 30px;
 }
 
 ul.messages li img.playing {
