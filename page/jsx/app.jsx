@@ -54,6 +54,7 @@ module.exports.App = React.createClass({
   },
   getDefaultProps : function() {
     return {
+      dbgLocalShortcut : false, // if enabled, images/audio can get broken
       snapshotInterval : 250    // init as `Infinity` to disable
     };
   },
@@ -67,7 +68,7 @@ module.exports.App = React.createClass({
     this.props.db.changes({since:'now', include_docs:true}, function (e,d) {
       if (e) throw e;   // TODO: what?
       else if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
-      else if (d.doc.client === this.props.client) return;      // already directly integrated
+      else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
       else this.integrateItemIntoMessages(d.doc);
     }.bind(this));
   },
@@ -176,8 +177,8 @@ module.exports.App = React.createClass({
     this.props.db.post(item, function (e) {
       if (e) throw e;
     });
-    // also display locally right away
-    this.integrateItemIntoMessages(item);
+    // also display locally right away [disabled for reliable snapshot URLs]
+    if (this.props.dbgLocalShortcut) this.integrateItemIntoMessages(item);
   },
   
   saveSnapshot : function (msgId, picNo) {
