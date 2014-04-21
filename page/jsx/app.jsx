@@ -196,6 +196,11 @@ window.dbgMessages = messages;
     }.bind(this);
   },
   
+  manualPlayback : function (msgObj) {
+console.log("PLAYBACK", this, arguments);
+    msgObj.play();
+  },
+  
   render : function() {
     var url = window.location;
     var recording = (this.state.recording) ?
@@ -230,7 +235,7 @@ window.dbgMessages = messages;
       </header>
       <ul className="messages">
         {this.state.messages.map(function (m) {
-          return <Message message={m} key={m.key} />
+          return <Message message={m} key={m.key} onPlaybackRequested={this.manualPlayback}/>
         }, this)}
       </ul>
       </div>
@@ -243,8 +248,8 @@ var BASE_URL = "/couchtalk/";     // HACK/TODO: get this out of coax somehow (pa
 var Message = React.createClass({
   propTypes : {
     message: React.PropTypes.object.isRequired,
-    playbackRequested: React.PropTypes.func,
-    playbackDone: React.PropTypes.func
+    onPlaybackRequested: React.PropTypes.func,
+    onPlaybackDone: React.PropTypes.func
   },
   getInitialState : function () {
     return {
@@ -259,8 +264,15 @@ var Message = React.createClass({
     }.bind(this);
     audio.onended = function () {
       this.stop();
-      if (this.props.playbackDone) this.props.playbackDone(this);
+      if (this.props.onPlaybackDone) this.props.onPlaybackDone(this);
     }.bind(this);
+    audio.onerror = function () {
+      console.warn("AUDIO ERROR!", audio.error, audio);
+      if (audio.error.code === window.MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED && audio.src.indexOf('?') === -1) {
+        // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/317
+        audio.src += "?nocache="+Math.random();
+      }
+    }
   },
   play : function () {
     var audio = this.audioElement();
@@ -277,15 +289,15 @@ var Message = React.createClass({
     return this._audioElement || (this._audioElement = $(this.getDOMNode()).find('audio')[0]);
   },
   
+  handleClick : function () {
+    if (this.props.onPlaybackRequested) this.props.onPlaybackRequested(this);
+  },
+  
   render : function () {
     var message = this.props.message,
         snapIdx = Math.round(this.state.percentProgress * (message.snaps.length - 1));
-try {
-var audio = this.audioElement();
-console.log("SNAP IDX:", snapIdx, audio.currentTime, audio.duration, message.snaps.length);
-} catch(e){}
     return (<li key={message.key}>
-        <img src={BASE_URL+message.snaps[snapIdx]} onClick={this.props.playbackRequested}/>
+        <img src={BASE_URL+message.snaps[snapIdx]} onClick={this.handleClick}/>
         <audio preload="auto" src={BASE_URL+message.audio}/>
       </li>);
   }
