@@ -331,9 +331,14 @@ var Message = React.createClass({
   
   render : function () {
     var message = this.props.message,
-        snapIdx = Math.round(this.state.percentProgress * (message.snaps.length - 1));
+        snapIdx = Math.round(this.state.percentProgress * (message.snaps.length - 1)),
+        classes = [];
+    if (message.justJoining) classes.push('joined');
+    else if (!message.audio) classes.push('noAudio');
+    if (message.playing) classes.push('playing');
+    if (message.lastPlayed) classes.push('played');
     return (<li key={message.key}>
-        <img src={message.snaps[snapIdx]} onClick={this.handleClick}/>
+        <img src={message.snaps[snapIdx]} className={classes.join(' ')} onClick={this.requestPlayback}/>
         <audio preload="auto" src={message.audio} ref="audio"/>
       </li>);
   },

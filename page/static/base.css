@@ -155,6 +155,11 @@ img.ondeck {
   display: none;
 }
 
+ul.messages li img.joined {
+  border: 4px solid #ff0;
+  border-style: dotted !important;
+}
+
 ul.messages li img.playing {
   border: 4px solid #0f0;
 }
