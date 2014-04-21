@@ -74,9 +74,8 @@ module.exports.App = React.createClass({
   componentDidMount : function (rootNode) {
     connectAudio(function(e, webcam) {
       if (e) return reloadError(e);
-      webcam.dom_streamURL = window.URL.createObjectURL(webcam.stream)
       this.setupSpacebarRecording();
-      this.setState({webcam : webcam});
+      this.setState({webcam : webcam, webcamStreamURL : window.URL.createObjectURL(webcam.stream)});
     }.bind(this))
   },
   
@@ -217,7 +216,7 @@ console.log("PLAYBACK", this, arguments);
         <p><strong>Hold down the space bar</strong> while you are talking to record.
           <em>All messages are public. </em>
         </p>
-        <video autoPlay muted width={160} height={120} className={(this.state.recording) ? 'recording' : ''} src={this.state.webcam && this.state.webcam.dom_streamURL}/>
+        <video autoPlay muted width={160} height={120} className={(this.state.recording) ? 'recording' : ''} src={this.state.webcamStreamURL}/>
         <canvas style={{display : "none"}} width={320} height={240}/>
         <label className="autoplay"><input type="checkbox" onChange={this.autoPlayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
