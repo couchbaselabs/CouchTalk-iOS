@@ -60,9 +60,7 @@ module.exports.App = React.createClass({
   getInitialState : function () {
     return {
       recording : false,
-      messages : $.extend([], {_byKey:Object.create(null)}),
-      currentlyPlayingChild : null,
-      lastPlayedChild : null
+      messages : $.extend([], {_byKey:Object.create(null)})
     };
   },
   componentWillMount : function () {
