@@ -91,11 +91,11 @@ module.exports.App = React.createClass({
       };
       if (doc.client === this.props.client) {
         // when recording, bump autoplay cursor up past our own message
-        message.lastPlayed = true;
         this.state.messages.forEach(function (msg) {
           msg.playing = false;
           msg.lastPlayed = false;
         });
+        message.lastPlayed = true;
       }
       messages.push(messages._byKey[message.key] = message);
     }
@@ -103,6 +103,11 @@ module.exports.App = React.createClass({
     if ('snapshotNumber' in doc) {
       if (doc.snapshotNumber === 'join') {
         message.justJoining = true;
+        if (message.lastPlayed) {
+          // HACK: this triggers a scroll to the user's own joining snapshot!
+          message.lastPlayed = false;
+          message.playing = true;
+        }
         doc.snapshotNumber = 0;
       }
       message.snaps[doc.snapshotNumber] = [this.props.db.url, doc._id, 'snapshot'].join('/');
@@ -279,6 +284,10 @@ window.dbgMessages = this.state.messages;
       );
   },
   
+  componentDidMount : function () {
+    this.componentDidUpdate();      // call after initial render too, just in case
+  },
+  
   componentDidUpdate : function () {
     // HACK: send initial snapshot once webcam is connected
     var video = this.refs.localPreview.getDOMNode();
@@ -328,6 +337,7 @@ var Message = React.createClass({
         }.bind(this);
       }
     }.bind(this);
+    this.componentDidUpdate();      // otherwise it doesn't get called after initial render
   },
   
   render : function () {
@@ -350,6 +360,7 @@ var Message = React.createClass({
         audio = this.refs.audio.getDOMNode(),
         audioPlaying = !(audio.paused || audio.ended);
     if (message.playing && message.justJoining) {
+      audio.parentNode.scrollIntoView();
       this.notifyFinished();
     } else if (message.playing && !audioPlaying) {
       audio.parentNode.scrollIntoView();
