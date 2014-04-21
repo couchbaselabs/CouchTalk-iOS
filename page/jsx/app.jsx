@@ -309,7 +309,6 @@ var Message = React.createClass({
     var message = this.props.message,
         audio = this.refs.audio.getDOMNode(),
         audioPlaying = !(audio.paused || audio.ended);
-    console.log("MESSAGE PLAYING", message.playing, "AUDIO PLAYING", audioPlaying);
     if (message.playing && !audioPlaying) {
       if (audio.currentTime) audio.currentTime = 0;
       audio.play();
