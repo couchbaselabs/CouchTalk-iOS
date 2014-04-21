@@ -263,7 +263,7 @@ var Message = React.createClass({
   },
   
   componentDidMount : function () {
-    var audio = this.audioElement();
+    var audio = this.refs.audio.getDOMNode();
     audio.ontimeupdate = function () {
       this.setState({percentProgress: audio.currentTime / audio.duration});
     }.bind(this);
@@ -280,18 +280,14 @@ var Message = React.createClass({
     }
   },
   play : function () {
-    var audio = this.audioElement();
+    var audio = this.refs.audio.getDOMNode();
     if (audio.currentTime) audio.currentTime = 0;
     audio.play();
   },
   stop : function () {
-    var audio = this.audioElement();
+    var audio = this.refs.audio.getDOMNode();
     audio.pause();
     this.setState({percentProgress:0});   // go back to first thumbail
-  },
-  audioElement : function () {
-    // TODO: make sure memoizing like this doesn't bring harm to The Way of React or something…
-    return this._audioElement || (this._audioElement = $(this.getDOMNode()).find('audio')[0]);
   },
   
   handleClick : function () {
@@ -303,7 +299,7 @@ var Message = React.createClass({
         snapIdx = Math.round(this.state.percentProgress * (message.snaps.length - 1));
     return (<li key={message.key}>
         <img src={BASE_URL+message.snaps[snapIdx]} onClick={this.handleClick}/>
-        <audio preload="auto" src={BASE_URL+message.audio}/>
+        <audio preload="auto" src={BASE_URL+message.audio} ref="audio"/>
       </li>);
   }
 });
