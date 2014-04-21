@@ -200,6 +200,12 @@ console.log("PLAYBACK", this, arguments);
     msgObj.play();
   },
   
+  updateAutoPlayback : function (msgObj) {
+    // messages in desired order
+    // state: [pic, ]old, own, new
+    
+  },
+  
   render : function() {
     var url = window.location;
     var recording = (this.state.recording) ?
@@ -234,7 +240,7 @@ console.log("PLAYBACK", this, arguments);
       </header>
       <ul className="messages">
         {this.state.messages.map(function (m) {
-          return <Message message={m} key={m.key} onPlaybackRequested={this.manualPlayback}/>
+          return <Message message={m} key={m.key} onPlaybackRequested={this.manualPlayback} onPlaybackDone={this.updateAutoPlayback}/>
         }, this)}
       </ul>
       </div>
