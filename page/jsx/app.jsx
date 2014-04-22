@@ -4,10 +4,6 @@
  /* global $ */
  /* global io */
  
-// TODO: proper "load older"
-// postpone: conversation view (start/end)
-// forget: message destruction
-
 
 var
   connectAudio = require("../js/recorder").connectAudio,
@@ -82,21 +78,27 @@ module.exports.App = React.createClass({
     }.bind(this));
   },
   
+  handleChange : function (d) {
+    if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
+    else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
+    else this.integrateItemIntoMessages(d.doc);
+  },
   monitorChanges : function (seq) {
     if (!arguments.length) seq = 'now';
     this.props.db.changes({since:seq, include_docs:true}, function (e,d) {
-        if (e) throw e;   // TODO: what?
-        else if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
-        else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
-        else this.integrateItemIntoMessages(d.doc);
-      }.bind(this));
+      if (e) throw e;   // TODO: what?
+      this.handleChange(d);
+    }.bind(this));
   },
-  
   loadAllMessages : function () {
-    this.setState({loadedAll : true});
-    this.props.db('_changes', {include_docs:true}).get(function (e,d) {
-      console.log("GOT CHANGES", e, d);
-    });
+    var emptyMessages = $.extend([], {_byKey:Object.create(null)});     // HACK: this maintains order…
+    this.setState({loadedAll : true, messages : emptyMessages});
+    
+    // NOTE: we will have had some of these, but should be harmless to re-integrate…
+    this.props.db('_changes')({include_docs:true}).get(function (e,d) {
+      if (e) throw e;
+      d.results.forEach(this.handleChange, this);
+    }.bind(this));
   },
   
   integrateItemIntoMessages : function (doc) {
