@@ -240,12 +240,15 @@ module.exports.App = React.createClass({
     // BIG HACK: any time messages change we want to also sneak in any autoplay changes
     if (!nextState.autoplay) return;
     var messages = nextState.messages,
-        prevWasLastPlayed = false;
+        prevPlayed = null;
     messages.forEach(function (msg) {
-      if (msg.lastPlayed) prevWasLastPlayed = true;
-      else if (prevWasLastPlayed) {
-        if (msg.audio || msg.justJoining) msg.playing = true;
-        prevWasLastPlayed = false;
+      if (msg.lastPlayed) prevPlayed = msg;
+      else if (prevPlayed) {
+        if (msg.audio || msg.justJoining) {
+          prevPlayed.lastPlayed = false;
+          msg.playing = true;
+        }
+        prevPlayed = null;
       }
     });
   },
