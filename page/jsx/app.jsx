@@ -4,7 +4,7 @@
  /* global $ */
  /* global io */
  
-// TODO: proper "load older", autoplay/scroll-into-view
+// TODO: proper "load older"
 // postpone: conversation view (start/end)
 // forget: message destruction
 
@@ -377,95 +377,6 @@ var Message = React.createClass({
       audio.pause();
       audio.currentTime = 0;      // go back to first thumbail
     }
-  }
-});
-
-
-var OldMessage = React.createClass({
-  getInitialState : function () {
-    return {showing : 0}
-  },
-  componentDidMount : function () {
-    var audio = $(this.getDOMNode()).find("audio")[0];
-    audio.addEventListener('ended', function(){
-      this.stopAnimation()
-      this.props.playFinished(this.props.message)
-    }.bind(this))
-    audio.addEventListener('playing', function(){
-      this.animateImages()
-    }.bind(this))
-    var deck = $(this.getDOMNode()).find("img.ondeck")[0];
-    deck.addEventListener("load", function(e) {
-      // console.log("deck load", this, e)
-      $(this).parent().find("img.messImg")[0].src = this.src;
-    })
-  },
-//   shouldComponentUpdate : function(nextProps) {
-//     // console.log(nextProps.message)
-// warning
-//     return ["snap","audio","played","playing","image"].filter(function(k){
-//       console.log(k, nextProps.message[k], this.props.message[k])
-//       return nextProps.message[k] !== this.props.message[k]
-//     }.bind(this)).length !== 0
-// // return true;
-//   },
-  getMax : function(){
-    var split = this.props.message.snap.split(":");
-    if (split[1]) {
-      return parseInt(split[1], 10) || 0;
-    } else { return 0}
-  },
-  getSnapURL : function(){
-    var url = "/snapshot/" + this.props.message.snap.split(":")[0];
-    var number =  this.props.message.audio ? this.state.showing : this.getMax();
-    if (number) {
-      url += ":" + number
-    }
-    return url;
-  },
-  animateImages : function() {
-    var animateHandle = setInterval(function(){
-      this.setState({showing : this.state.showing+1})
-    }.bind(this), 250)
-    this.setState({animateHandle : animateHandle})
-  },
-  stopAnimation: function(){
-    clearInterval(this.state.animateHandle)
-    this.setState({showing : 0})
-  },
-  render : function() {
-    // console.log("Render", this.props.message)
-    var snapURL, backupURL;
-    if (this.props.message.image) {
-      snapURL = this.getSnapURL();
-      backupURL = "/snapshot/" + this.props.message.snap.split(":")[0];
-    }
-    if (this.props.message.snapdata) {
-      snapURL = this.props.message.snapdata;
-    }
-    var audioURL = "/audio/" + this.props.message.audio;
-    var className = "messImg";
-
-    if (!this.props.message.audio) {
-      if (!this.props.message.join) {
-        className += " noAudio"
-      }
-    } else {
-      if (this.props.playing) {
-        className += " playing"
-      } else {
-        if (this.props.message.played) {
-          className += " played"
-        } else {
-          className += " unplayed"
-        }
-      }
-    }
-    return (<li key={this.props.message.key}>
-        <img className={className} src={backupURL} onClick={this.props.playMe}/>
-        <img className="ondeck" src={snapURL}/>
-        <audio src={audioURL}/>
-      </li>)
   }
 });
 
