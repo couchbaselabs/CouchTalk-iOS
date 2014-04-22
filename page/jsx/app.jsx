@@ -55,6 +55,7 @@ module.exports.App = React.createClass({
   getDefaultProps : function() {
     return {
       dbgLocalShortcut : false, // if enabled, images/audio can get broken
+      dbgDbSupportsSinceNow : false,
       snapshotInterval : 250    // init as `Infinity` to disable
     };
   },
@@ -66,11 +67,10 @@ module.exports.App = React.createClass({
     };
   },
   componentWillMount : function () {
-    this.props.db.changes({since:'now', include_docs:true}, function (e,d) {
-      if (e) throw e;   // TODO: what?
-      else if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
-      else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
-      else this.integrateItemIntoMessages(d.doc);
+    if (this.props.dbgDbSupportsSinceNow) this.monitorChanges();
+    else this.props.db.get(function (e,d) {
+      if (e) throw e;
+      this.monitorChanges(d.update_seq);
     }.bind(this));
   },
   componentDidMount : function (rootNode) {
@@ -79,6 +79,16 @@ module.exports.App = React.createClass({
       this.setupSpacebarRecording();
       this.setState({webcam : webcam, webcamStreamURL : window.URL.createObjectURL(webcam.stream)});
     }.bind(this));
+  },
+  
+  monitorChanges : function (seq) {
+    if (seq == null) seq = 'now';
+    this.props.db.changes({since:seq, include_docs:true}, function (e,d) {
+        if (e) throw e;   // TODO: what?
+        else if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
+        else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
+        else this.integrateItemIntoMessages(d.doc);
+      }.bind(this));
   },
   
   integrateItemIntoMessages : function (doc) {
