@@ -63,7 +63,8 @@ module.exports.App = React.createClass({
     return {
       recording : false,
       autoplay : $.fn.cookie('autoplay') !== "0",
-      messages : $.extend([], {_byKey:Object.create(null)})
+      messages : $.extend([], {_byKey:Object.create(null)}),
+      loadedAll : false
     };
   },
   componentWillMount : function () {
@@ -82,13 +83,20 @@ module.exports.App = React.createClass({
   },
   
   monitorChanges : function (seq) {
-    if (seq == null) seq = 'now';
+    if (!arguments.length) seq = 'now';
     this.props.db.changes({since:seq, include_docs:true}, function (e,d) {
         if (e) throw e;   // TODO: what?
         else if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
         else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
         else this.integrateItemIntoMessages(d.doc);
       }.bind(this));
+  },
+  
+  loadAllMessages : function () {
+    this.setState({loadedAll : true});
+    this.props.db('_changes', {include_docs:true}).get(function (e,d) {
+      console.log("GOT CHANGES", e, d);
+    });
   },
   
   integrateItemIntoMessages : function (doc) {
@@ -285,8 +293,7 @@ window.dbgMessages = this.state.messages;
         <label className="autoplay"><input type="checkbox" onChange={this.autoplayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
         
-        // TODO: this still needs to be updated (alongside workaround for missing `_changes?since=now`)
-        {(0 && oldestKnownMessage && oldestKnownMessage.snap.split('-')[2] !== '0') && <p><a onClick={this.loadEarlierMessages}>Load earlier messages.</a></p>}
+        {!this.state.loadedAll && <p><a onClick={this.loadAllMessages}>Load all previous messages.</a></p>}
         
         <aside>Invite people to join the conversation: <input className="shareLink" value={url} readOnly/> or <a href="/">Go to a new room.</a>
         </aside>
