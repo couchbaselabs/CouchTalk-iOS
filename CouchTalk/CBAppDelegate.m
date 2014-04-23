@@ -34,6 +34,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     CBLReplication* pullReplication = [database createPullReplication:centralDatabase];
     // NOTE: for now just sync everything like the browser app does
     //pullReplication.channels = @[ @"room-testing123" ];
+    pullReplication.continuous = YES;
     [pullReplication start];
     
     CBLReplication* pushReplication = [database createPushReplication:centralDatabase];
