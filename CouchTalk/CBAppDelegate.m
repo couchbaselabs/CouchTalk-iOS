@@ -26,10 +26,6 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     
     [self setupCouchbaseListener];
     
-    
-    
-    NSLog(@"OBJ - %@", [CBLJSON JSONObjectWithData:[@"\"test\"" dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil]);
-    
     return YES;
 }
 

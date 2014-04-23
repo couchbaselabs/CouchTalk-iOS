@@ -78,6 +78,21 @@ module.exports.App = React.createClass({
     }.bind(this));
   },
   
+  changesOpts : function (more) {
+    function expando(prefix, string) {
+      // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/321
+      var params = {};
+      params[prefix+'LEN'] = string.length;
+      Array.prototype.forEach.call(string, function (s,i) {
+        params[''+prefix+i] = s.charCodeAt(0);
+      });
+      return params;
+    }
+    return $.extend({
+      include_docs: true,
+      filter : 'CouchTalk/roomItems',
+    }, expando('room', this.props.room), more || {});
+  },
   handleChange : function (d) {
     if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
     else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
@@ -85,7 +100,7 @@ module.exports.App = React.createClass({
   },
   monitorChanges : function (seq) {
     if (!arguments.length) seq = 'now';
-    this.props.db.changes({since:seq, include_docs:true}, function (e,d) {
+    this.props.db.changes(this.changesOpts({since:seq}), function (e,d) {
       if (e) throw e;   // TODO: what?
       this.handleChange(d);
     }.bind(this));
@@ -95,7 +110,7 @@ module.exports.App = React.createClass({
     this.setState({loadedAll : true, messages : emptyMessages});
     
     // NOTE: we will have had some of these, but should be harmless to re-integrate…
-    this.props.db('_changes')({include_docs:true}).get(function (e,d) {
+    this.props.db('_changes')(this.changesOpts()).get(function (e,d) {
       if (e) throw e;
       d.results.forEach(this.handleChange, this);
     }.bind(this));
