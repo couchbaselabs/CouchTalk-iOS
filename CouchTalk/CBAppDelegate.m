@@ -10,6 +10,9 @@
 #import <CouchbaseLite/CouchbaseLite.h>
 #import <CouchbaseLiteListener/CBLListener.h>
 
+NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk-dev/";      // TODO: move into app's plist or something?
+NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
+
 @implementation CBAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -23,12 +26,15 @@
     
     [self setupCouchbaseListener];
     
+    
+    
+    NSLog(@"OBJ - %@", [CBLJSON JSONObjectWithData:[@"\"test\"" dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil]);
+    
     return YES;
 }
 
 - (void) startReplicationsWithDatabase:(CBLDatabase *)database {
-    // TODO: move centralDatabase URL into app's plist or something…
-    NSURL* centralDatabase = [NSURL URLWithString:@"http://sync.couchbasecloud.com/couchtalk-dev/"];
+    NSURL* centralDatabase = [NSURL URLWithString:HOST_URL];
     CBLReplication* pullReplication = [database createPullReplication:centralDatabase];
     // NOTE: for now just sync everything like the browser app does
     //pullReplication.channels = @[ @"room-testing123" ];
@@ -44,6 +50,38 @@
     NSError *error;
     CBLDatabase* database = [manager databaseNamed:@"couchtalk" error:&error];
     [self startReplicationsWithDatabase:database];
+    
+    [database setFilterNamed: @"CouchTalk/roomItems" asBlock: FILTERBLOCK({
+        // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/321
+        /*
+        function expando(prefix, string) {
+          var params = {};
+          params[prefix+'LEN'] = string.length;
+          Array.prototype.forEach.call(string, function (s,i) {
+            params[''+prefix+i] = s.charCodeAt(0);
+          });
+          return params;
+        }
+        var o = expando('room', "😄 Happy π day!");
+        Object.keys(o).map(function (k) { return [k,o[k]].join('='); }).join('&');
+        */
+        NSUInteger roomLen = [params[@"roomLEN"] unsignedIntegerValue];
+        if (roomLen > 64) return NO;            // sanity check
+        unichar roomBuffer[roomLen];            // conveniently, JavaScript also pre-dates Unicode 2.0
+        NSAssert(roomLen < 64, @"Room identifiers mustn't be so huge.");
+        for (NSUInteger i = 0, len = roomLen; i < len; ++i) {
+            NSString* key = ([NSString stringWithFormat:@"room%u", i]);
+            roomBuffer[i] = [params[key] unsignedShortValue];
+        }
+        NSString* roomName = [[NSString alloc] initWithCharactersNoCopy:roomBuffer length:roomLen freeWhenDone:NO];
+        
+        //NSString* roomName = params[@"room"];
+        return (
+            [revision[@"type"] isEqualToString:ITEM_TYPE] &&
+            [revision[@"room"] isEqualToString:roomName]
+        );
+    })];
+    
     
     CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 59840];
     BOOL ok = [_listener start: &error];
