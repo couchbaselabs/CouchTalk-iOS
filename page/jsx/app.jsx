@@ -82,6 +82,7 @@ module.exports.App = React.createClass({
     function expando(prefix, string) {
       // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/321
       var params = {};
+      params[prefix] = string;
       params[prefix+'LEN'] = string.length;
       Array.prototype.forEach.call(string, function (s,i) {
         params[''+prefix+i] = s.charCodeAt(0);
