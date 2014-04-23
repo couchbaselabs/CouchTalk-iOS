@@ -368,13 +368,13 @@ var Message = React.createClass({
     }.bind(this);
     audio.onended = this.notifyFinished;
     audio.onerror = function () {
-      console.warn("AUDIO ERROR!", audio.error, audio);
+      //console.warn("AUDIO ERROR!", audio.error, audio);
       if (audio.error.code === window.MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED && audio.src.indexOf('?') === -1) {
         // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/317
         audio.src += "?nocache="+Math.random();
         audio.oncanplay = function () {
           audio.oncanplay = null;
-          console.log("Worked around audio error by cache busting.");
+          //console.log("Worked around audio error by cache busting.");
           this.forceUpdate();
         }.bind(this);
       }
