@@ -296,7 +296,7 @@ window.dbgMessages = this.state.messages;
       <span className="recording">Recording.</span> :
       <span/>;
     var oldestKnownMessage = this.state.messages[0];
-    document.title = this.props.id + " - CouchTalk"
+    document.title = this.props.room + " - CouchTalk"
     var beg = (this.state.webcam) ? "" : <h2>Smile! &uArr;</h2>;
     return (
       <div className="room">
