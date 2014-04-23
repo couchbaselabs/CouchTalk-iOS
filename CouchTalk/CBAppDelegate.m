@@ -30,14 +30,8 @@
     // TODO: move centralDatabase URL into app's plist or something…
     NSURL* centralDatabase = [NSURL URLWithString:@"http://sync.couchbasecloud.com/couchtalk-dev/"];
     CBLReplication* pullReplication = [database createPullReplication:centralDatabase];
-    /* NOTE: for now just sync everything like the browser app does
-    pullReplication.filter = @"sync_gateway/bychannel";
-    pullReplication.filterParams = @{
-        // TODO: we really need a ReplicationManager class that'll update these (based on ???)
-        //       maybe we can collect an (ever-growing) NSSet of every locally-posted doc.room
-        @"channels" : @"room-testing123"
-    };
-    */
+    // NOTE: for now just sync everything like the browser app does
+    //pullReplication.channels = @[ @"room-testing123" ];
     [pullReplication start];
     
     CBLReplication* pushReplication = [database createPushReplication:centralDatabase];
