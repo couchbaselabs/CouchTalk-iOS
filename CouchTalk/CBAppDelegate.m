@@ -47,7 +47,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     CBLDatabase* database = [manager databaseNamed:@"couchtalk" error:&error];
     [self startReplicationsWithDatabase:database];
     
-    [database setFilterNamed: @"CouchTalk/roomItems" asBlock: FILTERBLOCK({
+    [database setFilterNamed: @"app/roomItems" asBlock: FILTERBLOCK({
         // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/321
         /*
         function expando(prefix, string) {

@@ -90,7 +90,7 @@ module.exports.App = React.createClass({
     }
     return $.extend({
       include_docs: true,
-      filter : 'CouchTalk/roomItems',
+      filter : 'app/roomItems',
     }, expando('room', this.props.room), more || {});
   },
   handleChange : function (d) {
