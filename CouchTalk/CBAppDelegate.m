@@ -10,7 +10,7 @@
 #import <CouchbaseLite/CouchbaseLite.h>
 #import <CouchbaseLiteListener/CBLListener.h>
 
-NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk-dev/";      // TODO: move into app's plist or something?
+NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk-dev2";      // TODO: move into app's plist or something?
 NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
 @implementation CBAppDelegate
@@ -54,7 +54,6 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         CBLDocument* doc = [database existingDocumentWithID:change.documentID];
         /* NOTE: the following code expects this Sync Gateway callback to be installed
         function(doc) {
-          channel("is_this_working");
           if (doc.type === 'com.couchbase.labs.couchtalk.message-item') {
             channel('room-'+doc.room);
           }
