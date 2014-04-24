@@ -29,24 +29,46 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     return YES;
 }
 
-- (void) startReplicationsWithDatabase:(CBLDatabase *)database {
+- (CBLReplication*) startReplicationsWithDatabase:(CBLDatabase *)database {
     NSURL* centralDatabase = [NSURL URLWithString:HOST_URL];
-    CBLReplication* pullReplication = [database createPullReplication:centralDatabase];
-    // NOTE: for now just sync everything like the browser app does
-    //pullReplication.channels = @[ @"room-testing123" ];
-    pullReplication.continuous = YES;
-    [pullReplication start];
-    
     CBLReplication* pushReplication = [database createPushReplication:centralDatabase];
     pushReplication.continuous = YES;
     [pushReplication start];
+    
+    CBLReplication* pullReplication = [database createPullReplication:centralDatabase];
+    pullReplication.continuous = YES;
+    // instead of starting, we let caller start once it needs at least one channel
+    return pullReplication;
 }
 
 - (void) setupCouchbaseListener {
     CBLManager* manager = [CBLManager sharedInstance];
     NSError *error;
     CBLDatabase* database = [manager databaseNamed:@"couchtalk" error:&error];
-    [self startReplicationsWithDatabase:database];
+    
+    CBLReplication* pullReplication = [self startReplicationsWithDatabase:database];
+    NSMutableSet* roomsUsed = [NSMutableSet set];
+    [[NSNotificationCenter defaultCenter] addObserverForName:kCBLDatabaseChangeNotification object:database queue:nil usingBlock:^(NSNotification *note) {
+      for (CBLDatabaseChange* change in note.userInfo[@"changes"]) {
+        if (change.source) continue;    // handy! this means it was synced from remote (not that we'd get items from unsubscribed channels anyway though…)
+        CBLDocument* doc = [database existingDocumentWithID:change.documentID];
+        /* NOTE: the following code expects this Sync Gateway callback to be installed
+        function(doc) {
+          channel("is_this_working");
+          if (doc.type === 'com.couchbase.labs.couchtalk.message-item') {
+            channel('room-'+doc.room);
+          }
+        }
+        */
+        NSString* room = ([doc[@"type"] isEqualToString:ITEM_TYPE]) ? [NSString stringWithFormat:@"room-%@", doc[@"room"]] : nil;
+        if (room && ![roomsUsed containsObject:room]) {
+          [roomsUsed addObject:room];
+          pullReplication.channels = [roomsUsed allObjects];
+          if (!pullReplication.running) [pullReplication start];
+          NSLog(@"Now syncing with %@", pullReplication.channels);
+        }
+      }
+    }];
     
     [database setFilterNamed: @"app/roomItems" asBlock: FILTERBLOCK({
         // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/321
