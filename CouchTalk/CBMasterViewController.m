@@ -10,6 +10,8 @@
 
 #import "CBDetailViewController.h"
 
+#import <SystemConfiguration/CaptiveNetwork.h>
+
 @interface CBMasterViewController () {
     NSMutableArray *_objects;
 }
@@ -26,15 +28,41 @@
     [super awakeFromNib];
 }
 
++ (NSString*)networkInfo            // TODO: move this to the App Delegate along with necessary Reachability stuff…
+{
+    NSString* wirelessSSID = nil;
+    CFArrayRef ifaces = CNCopySupportedInterfaces();
+    if (!ifaces) return nil;
+    if (ifaces && CFArrayGetCount(ifaces)) {
+        CFStringRef en0 = CFArrayGetValueAtIndex(ifaces, 0);
+        CFDictionaryRef info = CNCopyCurrentNetworkInfo(en0);
+        wirelessSSID = [(__bridge id)CFDictionaryGetValue(info, kCNNetworkInfoKeySSID) copy];
+        CFRelease(info);
+    }
+    if (ifaces) CFRelease(ifaces);
+    
+    // TODO: get IP address, see e.g. http://stackoverflow.com/questions/7072989/iphone-ipad-osx-how-to-get-my-ip-address-programmatically
+    // TODO: we'll also need to monitor general network reachability
+    
+    return wirelessSSID;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    // TODO: this info should come from the app delegate
+    self.navigationItem.title = @"http://127.0.0.1:8080";
+    NSLog(@"WiFi is %@", [[self class] networkInfo]);
+    
 	// Do any additional setup after loading the view, typically from a nib.
+    /*
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
 
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
     self.navigationItem.rightBarButtonItem = addButton;
     self.detailViewController = (CBDetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
+    */
 }
 
 - (void)didReceiveMemoryWarning
