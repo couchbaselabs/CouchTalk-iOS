@@ -10,4 +10,6 @@
 
 @interface CouchTalkRedirector : HTTPServer
 
++ (NSDictionary*)networkInfo;       // including this here for laziness…
+
 @end
