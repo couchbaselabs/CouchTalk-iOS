@@ -115,7 +115,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     
     CouchTalkRedirector* redirector = [[CouchTalkRedirector alloc] init];
     [redirector setType:@"_http._tcp."];
-    [redirector setPort:8080];
+    //[redirector setPort:8080];
     ok = [redirector start:&error];
     if (!ok) {
         NSLog(@"Couldn't start redirect helper: %@", error);

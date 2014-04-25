@@ -31,7 +31,7 @@
     [super awakeFromNib];
 }
 
-+ (NSString*)networkInfo            // TODO: move this to the App Delegate along with necessary Reachability stuff…
++ (NSDictionary*)networkInfo            // TODO: move this to the App Delegate along with any necessary Reachability monitoring…
 {
     // collect IP4 address for each active interface, we'll figure out which one's the WiFi below
     // just use POSIX stuff, i.e. http://www.beej.us/guide/bgnet/output/html/multipage/inet_ntopman.html
@@ -55,29 +55,39 @@
     NSLog(@"Found IP4 addresses for interfaces: %@", interfaceIP4s);
     
     NSString* wirelessSSID = nil;
+    NSString* wirelessIPv4 = nil;
     CFArrayRef ifaces = CNCopySupportedInterfaces();
-    if (!ifaces) return nil;
-    if (ifaces && CFArrayGetCount(ifaces)) {
-        CFStringRef en0 = CFArrayGetValueAtIndex(ifaces, 0);
-        CFDictionaryRef info = CNCopyCurrentNetworkInfo(en0);
-        wirelessSSID = [(__bridge id)CFDictionaryGetValue(info, kCNNetworkInfoKeySSID) copy];
-        CFRelease(info);
+    if (ifaces) {
+        if (CFArrayGetCount(ifaces)) {
+            CFStringRef ifN = CFArrayGetValueAtIndex(ifaces, 0);
+            wirelessIPv4 = interfaceIP4s[(__bridge id)ifN];
+            CFDictionaryRef info = CNCopyCurrentNetworkInfo(ifN);
+            wirelessSSID = [(__bridge id)CFDictionaryGetValue(info, kCNNetworkInfoKeySSID) copy];
+            CFRelease(info);
+        }
+        CFRelease(ifaces);
     }
-    if (ifaces) CFRelease(ifaces);
     
+    if (!wirelessSSID) wirelessSSID = @"Unknown SSID";
+    if (!wirelessIPv4) wirelessIPv4 = interfaceIP4s.allValues[0];
     
-    // TODO: we'll also need to monitor general network reachability
-    
-    return wirelessSSID;
+    return @{
+        @"SSID": wirelessSSID,
+        @"IPv4": wirelessIPv4
+    };
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    // TODO: this info should come from the app delegate
-    self.navigationItem.title = @"http://127.0.0.1:8080";
-    NSLog(@"WiFi is %@", [[self class] networkInfo]);
+    // TODO: the title should probably come from App Delegate
+    NSDictionary* netInfo = [[self class] networkInfo];
+    if (netInfo[@"IPv4"]) {
+        self.navigationItem.title = [NSString stringWithFormat:@"http://%@:8080 — %@", netInfo[@"IPv4"], netInfo[@"SSID"]];
+    } else {
+        self.navigationItem.title = @"No WiFi!";
+    }
     
 	// Do any additional setup after loading the view, typically from a nib.
     /*
