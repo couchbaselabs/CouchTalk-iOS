@@ -47,6 +47,7 @@
 		3E7E25B9190AEFCC005599CA /* CouchTalkRedirector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CouchTalkRedirector.m; sourceTree = "<group>"; };
 		3E7E25BB190AF09C005599CA /* HTTPRedirectResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HTTPRedirectResponse.h; sourceTree = "<group>"; };
 		3E7E25BC190AF222005599CA /* HTTPRedirectResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPRedirectResponse.m; sourceTree = "<group>"; };
+		3E7E25BF190B0350005599CA /* HTTPMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HTTPMessage.h; sourceTree = "<group>"; };
 		3E9B2A311909CDAB007A2E2E /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		77C0F042599D444BBBBFAB16 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7903AA1118E33DFD00AC321C /* CouchTalk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CouchTalk.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -105,6 +106,7 @@
 			children = (
 				3E7E25B4190AED40005599CA /* HTTPServer.h */,
 				3E7E25B5190AEEBE005599CA /* HTTPConnection.h */,
+				3E7E25BF190B0350005599CA /* HTTPMessage.h */,
 				3E7E25B6190AEF7A005599CA /* HTTPResponse.h */,
 				3E7E25BB190AF09C005599CA /* HTTPRedirectResponse.h */,
 				3E7E25BC190AF222005599CA /* HTTPRedirectResponse.m */,
