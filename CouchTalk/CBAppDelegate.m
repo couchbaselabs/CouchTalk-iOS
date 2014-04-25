@@ -10,6 +10,10 @@
 #import <CouchbaseLite/CouchbaseLite.h>
 #import <CouchbaseLiteListener/CBLListener.h>
 
+//#import <CocoaHTTPServer/HTTPServer.h>    // pod is old broken version, and causes linker conflicts with CBL…
+#import "CouchTalkRedirector.h"
+
+
 NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk-dev2";      // TODO: move into app's plist or something?
 NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
@@ -108,6 +112,17 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     } else {
         NSLog(@"Couchbase Lite listener not started");
     }
+    
+    CouchTalkRedirector* redirector = [[CouchTalkRedirector alloc] init];
+    [redirector setType:@"_http._tcp."];
+    [redirector setPort:8080];
+    ok = [redirector start:&error];
+    if (!ok) {
+        NSLog(@"Couldn't start redirect helper: %@", error);
+    } else {
+        NSLog(@"Redirector listening on %u", redirector.listeningPort);
+    }
+    CFRetain((__bridge CFTypeRef)redirector);       // TODO/HACK: need a better way to keep this around
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
