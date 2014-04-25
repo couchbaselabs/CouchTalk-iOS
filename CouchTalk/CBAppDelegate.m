@@ -11,6 +11,7 @@
 #import <CouchbaseLiteListener/CBLListener.h>
 
 //#import <CocoaHTTPServer/HTTPServer.h>    // pod is old broken version, and causes linker conflicts with CBL…
+#import "CBMasterViewController.h"
 #import "CouchTalkRedirector.h"
 
 
@@ -27,6 +28,10 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
     }
+    
+    // HACK: should probably use an IBOutlet or something instead…
+    // TODO: this is probably broken on iPad because it looks like that has a split view controller at root?
+    self.mainController = (id)(((UINavigationController*)self.window.rootViewController).visibleViewController);
     
     [self setupCouchbaseListener];
     
@@ -66,7 +71,9 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         NSString* room = ([doc[@"type"] isEqualToString:ITEM_TYPE]) ? [NSString stringWithFormat:@"room-%@", doc[@"room"]] : nil;
         if (room && ![roomsUsed containsObject:room]) {
           [roomsUsed addObject:room];
-          pullReplication.channels = [roomsUsed allObjects];
+          
+          pullReplication.channels = self.mainController.objects = [roomsUsed allObjects];
+          
           if (!pullReplication.running) [pullReplication start];
           NSLog(@"Now syncing with %@", pullReplication.channels);
         }
@@ -124,18 +131,13 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     }
     CFRetain((__bridge CFTypeRef)redirector);       // TODO/HACK: need a better way to keep this around
     
-    
-    // HACK: should probably use an IBOutlet or something instead…
-    // TODO: this is probably broken on iPad because it looks like that has a split view controller at root?
-    UIViewController* mainView = ((UINavigationController*)self.window.rootViewController).visibleViewController;
-    
     // TODO: add Reachability monitoring? note that IPv4 will basically always be defined
     NSDictionary* netInfo = [CouchTalkRedirector networkInfo];
     if (netInfo[@"IPv4"]) {
-        mainView.navigationItem.title = [NSString stringWithFormat:@"http://%@:%u — %@",
+        self.mainController.navigationItem.title = [NSString stringWithFormat:@"http://%@:%u — %@",
             netInfo[@"IPv4"], redirector.listeningPort, netInfo[@"SSID"]];
     } else {
-        mainView.navigationItem.title = @"No WiFi!";
+        self.mainController.navigationItem.title = @"No WiFi!";
     }
 }
 

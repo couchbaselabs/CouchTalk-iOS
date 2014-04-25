@@ -14,4 +14,6 @@
 
 @property (strong, nonatomic) CBDetailViewController *detailViewController;
 
+@property (copy) NSArray* objects;
+
 @end

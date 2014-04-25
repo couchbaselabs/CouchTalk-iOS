@@ -8,8 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
+@class CBMasterViewController;
+
 @interface CBAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+
+@property (strong, nonatomic) CBMasterViewController *mainController;
 
 @end

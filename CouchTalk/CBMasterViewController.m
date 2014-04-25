@@ -50,6 +50,17 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)setObjects:(NSArray*)objects
+{
+    _objects = [objects mutableCopy];
+    [self.tableView reloadData];
+}
+
+- (NSArray*)objects
+{
+    return _objects;
+}
+
 - (void)insertNewObject:(id)sender
 {
     if (!_objects) {
