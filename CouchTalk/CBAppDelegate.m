@@ -113,21 +113,9 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         NSLog(@"Couchbase Lite listener not started");
     }
     
-    // HACK: should probably use an IBOutlet or something instead…
-    // TODO: this is probably broken on iPad because it looks like that has a split view controller at root?
-    UIViewController* mainView = ((UINavigationController*)self.window.rootViewController).visibleViewController;
-    
-    // TODO: add Reachability monitoring? note that IPv4 will basically always be defined
-    NSDictionary* netInfo = [CouchTalkRedirector networkInfo];
-    if (netInfo[@"IPv4"]) {
-        mainView.navigationItem.title = [NSString stringWithFormat:@"http://%@:8080 — %@", netInfo[@"IPv4"], netInfo[@"SSID"]];
-    } else {
-        mainView.navigationItem.title = @"No WiFi!";
-    }
-    
     CouchTalkRedirector* redirector = [[CouchTalkRedirector alloc] init];
     [redirector setType:@"_http._tcp."];
-    //[redirector setPort:8080];
+    //[redirector setPort:8080];            // pros: easy to remember/type, cons: what if already in use?
     ok = [redirector start:&error];
     if (!ok) {
         NSLog(@"Couldn't start redirect helper: %@", error);
@@ -135,6 +123,20 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         NSLog(@"Redirector listening on %u", redirector.listeningPort);
     }
     CFRetain((__bridge CFTypeRef)redirector);       // TODO/HACK: need a better way to keep this around
+    
+    
+    // HACK: should probably use an IBOutlet or something instead…
+    // TODO: this is probably broken on iPad because it looks like that has a split view controller at root?
+    UIViewController* mainView = ((UINavigationController*)self.window.rootViewController).visibleViewController;
+    
+    // TODO: add Reachability monitoring? note that IPv4 will basically always be defined
+    NSDictionary* netInfo = [CouchTalkRedirector networkInfo];
+    if (netInfo[@"IPv4"]) {
+        mainView.navigationItem.title = [NSString stringWithFormat:@"http://%@:%u — %@",
+            netInfo[@"IPv4"], redirector.listeningPort, netInfo[@"SSID"]];
+    } else {
+        mainView.navigationItem.title = @"No WiFi!";
+    }
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
