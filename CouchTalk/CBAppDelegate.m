@@ -110,6 +110,22 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         );
     })];
     
+    CBLView* view = [database viewNamed:@"snapshotsByRoom"];
+    [view setMapBlock: MAPBLOCK({
+        if (
+            [doc[@"type"] isEqualToString:ITEM_TYPE] &&
+            [doc[@"snapshotNumber"] isEqual:@"join"]
+        ) emit(doc[@"room"], nil);
+    }) version:@"1.0"];
+    
+    
+    // TODO: use this in CBDetailViewController to hook each snapshot contentURL into UIImage
+    CBLQuery* query = [view createQuery];
+    query.keys = @[ @"demoroom" ];
+    for (CBLQueryRow* row in [query run:nil]) {
+        NSLog(@"Here %@ %@ %@", row.key, row.documentID, row.value);
+    }
+    
     
     CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 59840];
     BOOL ok = [_listener start: &error];
