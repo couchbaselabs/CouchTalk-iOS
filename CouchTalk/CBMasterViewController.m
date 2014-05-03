@@ -75,20 +75,30 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 1;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return _objects.count;
+    return (section) ? _objects.count : 1;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    // TODO: these should come from localized strings file…
+    return (section) ? @"Active rooms:" : @"Connection info:";
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-
-    NSDictionary* info = _objects[indexPath.row];
-    cell.textLabel.text = info[@"room"];
+    NSDictionary* info = [self detailItemForIndexPath:indexPath];
+    if (indexPath.section) {
+        cell.textLabel.text = info[@"room"];
+    } else if (info) {
+        cell.textLabel.text = info[@"URL"]; 
+    } else {
+        cell.textLabel.text = @"No WiFi!";
+    }
     return cell;
 }
 
@@ -124,11 +134,14 @@
 }
 */
 
+- (id)detailItemForIndexPath:(NSIndexPath *)indexPath {
+    return (indexPath.section) ? self.objects[indexPath.row] : self.wifi;
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-        NSDate *object = _objects[indexPath.row];
-        self.detailViewController.detailItem = object;
+        self.detailViewController.detailItem = [self detailItemForIndexPath:indexPath];
     }
 }
 
@@ -136,7 +149,7 @@
 {
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSDate *object = _objects[indexPath.row];
+        NSDictionary* object = [self detailItemForIndexPath:indexPath];
         [[segue destinationViewController] setDetailItem:object];
     }
 }

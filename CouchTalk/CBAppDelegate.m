@@ -147,13 +147,17 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     }
     CFRetain((__bridge CFTypeRef)redirector);       // TODO/HACK: need a better way to keep this around
     
-    // TODO: add Reachability monitoring? note that IPv4 will basically always be defined
-    NSDictionary* netInfo = [CouchTalkRedirector networkInfo];
-    if (netInfo[@"IPv4"]) {
-        self.mainController.navigationItem.title = [NSString stringWithFormat:@"http://%@:%u — %@",
-            netInfo[@"IPv4"], redirector.listeningPort, netInfo[@"SSID"]];
+    // TODO: add Reachability monitoring?
+    NSDictionary* wifi = [CouchTalkRedirector networkInfo];
+    if (wifi[@"IPv4"]) {
+        self.mainController.wifi = @{
+            @"SSID": wifi[@"SSID"],
+            @"URL": [NSString stringWithFormat:@"http://%@:%u — %@", wifi[@"IPv4"], redirector.listeningPort, wifi[@"SSID"]],
+            @"IPv4": wifi[@"IPv4"],
+            @"port": @(redirector.listeningPort)
+        };
     } else {
-        self.mainController.navigationItem.title = @"No WiFi!";
+        self.mainController.wifi = nil;
     }
 }
 

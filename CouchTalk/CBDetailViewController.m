@@ -34,11 +34,14 @@
 - (void)configureView
 {
     // Update the user interface for the detail item.
-
-    if (self.detailItem) {
-        NSDictionary* info = self.detailItem;
+    NSDictionary* info = self.detailItem;
+    if (!info) return;
+    else if (info[@"room"]) {
         self.detailDescriptionLabel.text = [NSString stringWithFormat:@"%@ first seen %@", info[@"room"], info[@"added"]];
         // TODO: use info[@"query"] to display messages
+    } else if (info[@"SSID"]) {
+        self.detailDescriptionLabel.text = [NSString stringWithFormat:
+            @"Connect to WiFi: %@\nBrowse to: %@", info[@"SSID"], info[@"URL"]];
     }
 }
 
