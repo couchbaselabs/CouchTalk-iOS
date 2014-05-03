@@ -98,7 +98,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         if (roomLen > 64) return NO;            // sanity check
         unichar roomBuffer[roomLen];            // conveniently, JavaScript also pre-dates Unicode 2.0
         for (NSUInteger i = 0, len = roomLen; i < len; ++i) {
-            NSString* key = ([NSString stringWithFormat:@"room%u", i]);
+            NSString* key = ([NSString stringWithFormat:@"room%lu", (unsigned long)i]);
             roomBuffer[i] = [params[key] unsignedShortValue];
         }
         NSString* roomName = [[NSString alloc] initWithCharactersNoCopy:roomBuffer length:roomLen freeWhenDone:NO];
