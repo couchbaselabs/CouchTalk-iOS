@@ -55,8 +55,17 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     NSError *error;
     CBLDatabase* database = [manager databaseNamed:@"couchtalk" error:&error];
     
+    CBLView* detailViewView = [database viewNamed:@"snapshotsByRoom"];
+    [detailViewView setMapBlock: MAPBLOCK({
+        if (
+            [doc[@"type"] isEqualToString:ITEM_TYPE] &&
+            [doc[@"snapshotNumber"] isEqual:@"join"]
+        ) emit(doc[@"room"], nil);
+    }) version:@"1.0"];
+    
     CBLReplication* pullReplication = [self startReplicationsWithDatabase:database];
-    NSMutableSet* roomsUsed = [NSMutableSet set];
+    NSMutableSet* channelsUsed = [NSMutableSet set];
+    NSMutableArray* roomItems = [NSMutableArray array];
     [[NSNotificationCenter defaultCenter] addObserverForName:kCBLDatabaseChangeNotification object:database queue:nil usingBlock:^(NSNotification *note) {
       for (CBLDatabaseChange* change in note.userInfo[@"changes"]) {
         if (change.source) continue;    // handy! this means it was synced from remote (not that we'd get items from unsubscribed channels anyway though…)
@@ -68,14 +77,22 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
           }
         }
         */
-        NSString* room = ([doc[@"type"] isEqualToString:ITEM_TYPE]) ? [NSString stringWithFormat:@"room-%@", doc[@"room"]] : nil;
-        if (room && ![roomsUsed containsObject:room]) {
-          [roomsUsed addObject:room];
-          
-          pullReplication.channels = self.mainController.objects = [roomsUsed allObjects];
-          
+        NSString* channel = ([doc[@"type"] isEqualToString:ITEM_TYPE]) ? [NSString stringWithFormat:@"room-%@", doc[@"room"]] : nil;
+        if (channel && ![channelsUsed containsObject:channel]) {
+          [channelsUsed addObject:channel];
+          pullReplication.channels = [channelsUsed allObjects];
           if (!pullReplication.running) [pullReplication start];
           NSLog(@"Now syncing with %@", pullReplication.channels);
+          
+          NSString* room = doc[@"room"];
+          CBLQuery* query = [detailViewView createQuery];
+          query.keys = @[ room ];
+          [roomItems addObject:@{
+              @"room": room,
+              @"query": query,
+              @"added": [NSDate date]
+          }];
+          self.mainController.objects = roomItems;
         }
       }
     }];
@@ -109,23 +126,6 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
             [revision[@"room"] isEqualToString:roomName]
         );
     })];
-    
-    CBLView* view = [database viewNamed:@"snapshotsByRoom"];
-    [view setMapBlock: MAPBLOCK({
-        if (
-            [doc[@"type"] isEqualToString:ITEM_TYPE] &&
-            [doc[@"snapshotNumber"] isEqual:@"join"]
-        ) emit(doc[@"room"], nil);
-    }) version:@"1.0"];
-    
-    
-    // TODO: use this in CBDetailViewController to hook each snapshot contentURL into UIImage
-    CBLQuery* query = [view createQuery];
-    query.keys = @[ @"demoroom" ];
-    for (CBLQueryRow* row in [query run:nil]) {
-        NSLog(@"Here %@ %@ %@", row.key, row.documentID, row.value);
-    }
-    
     
     CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 59840];
     BOOL ok = [_listener start: &error];

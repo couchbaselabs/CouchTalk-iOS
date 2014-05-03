@@ -36,7 +36,9 @@
     // Update the user interface for the detail item.
 
     if (self.detailItem) {
-        self.detailDescriptionLabel.text = [self.detailItem description];
+        NSDictionary* info = self.detailItem;
+        self.detailDescriptionLabel.text = [NSString stringWithFormat:@"%@ first seen %@", info[@"room"], info[@"added"]];
+        // TODO: use info[@"query"] to display messages
     }
 }
 

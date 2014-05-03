@@ -87,8 +87,8 @@
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
 
-    NSDate *object = _objects[indexPath.row];
-    cell.textLabel.text = [object description];
+    NSDictionary* info = _objects[indexPath.row];
+    cell.textLabel.text = info[@"room"];
     return cell;
 }
 
