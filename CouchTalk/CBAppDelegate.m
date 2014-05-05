@@ -152,7 +152,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     if (wifi[@"IPv4"]) {
         self.mainController.wifi = @{
             @"SSID": wifi[@"SSID"],
-            @"URL": [NSString stringWithFormat:@"http://%@:%u — %@", wifi[@"IPv4"], redirector.listeningPort, wifi[@"SSID"]],
+            @"URL": [NSString stringWithFormat:@"http://%@:%u", wifi[@"IPv4"], redirector.listeningPort],
             @"IPv4": wifi[@"IPv4"],
             @"port": @(redirector.listeningPort)
         };
