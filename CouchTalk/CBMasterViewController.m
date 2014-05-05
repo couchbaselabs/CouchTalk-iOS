@@ -40,8 +40,8 @@
 
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
     self.navigationItem.rightBarButtonItem = addButton;
-    self.detailViewController = (CBDetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
     */
+    self.detailViewController = (CBDetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
 }
 
 - (void)didReceiveMemoryWarning
@@ -102,6 +102,7 @@
     return cell;
 }
 
+/*
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
 {
     // Return NO if you do not want the specified item to be editable.
@@ -118,7 +119,6 @@
     }
 }
 
-/*
 // Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
 {

@@ -27,11 +27,13 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         UISplitViewController *splitViewController = (UISplitViewController *)self.window.rootViewController;
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
+        
+        // HACK: should probably use an IBOutlet or something instead…
+        navigationController = [splitViewController.viewControllers firstObject];
+        self.mainController = (id)navigationController.topViewController;
+    } else {
+        self.mainController = (id)(((UINavigationController*)self.window.rootViewController).visibleViewController);
     }
-    
-    // HACK: should probably use an IBOutlet or something instead…
-    // TODO: this is probably broken on iPad because it looks like that has a split view controller at root?
-    self.mainController = (id)(((UINavigationController*)self.window.rootViewController).visibleViewController);
     
     [self setupCouchbaseListener];
     
@@ -163,12 +165,14 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
+NSLog(@"applicationWillResignActive");
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
+NSLog(@"applicationDidEnterBackground");
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
 }
@@ -185,6 +189,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
+NSLog(@"applicationWillTerminate");
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
