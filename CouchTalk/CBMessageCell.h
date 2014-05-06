@@ -10,4 +10,6 @@
 
 @interface CBMessageCell : AQGridViewCell
 
+@property (copy) NSString* imagePath;
+
 @end

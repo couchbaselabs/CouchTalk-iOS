@@ -65,6 +65,25 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         ) emit(doc[@"room"], nil);
     }) version:@"1.0"];
     
+    CBLView* roomSnapsView = [database viewNamed:@"app/initialSnapshotsByRoomAndTimestamp"];
+    [roomSnapsView setMapBlock: MAPBLOCK({
+        if (
+            [doc[@"type"] isEqualToString:ITEM_TYPE] &&
+            ([doc[@"snapshotNumber"] isEqual:@"join"] || [doc[@"snapshotNumber"] isEqual:@(0)])
+        ) emit(@[
+            doc[@"room"],
+            doc[@"timestamp"]
+        ], doc[@"message"]);
+    }) version:@"1.0"];
+    
+    CBLView* messageAudioView = [database viewNamed:@"initialSnapshotsByRoomAndTimestamp"];
+    [messageAudioView setMapBlock: MAPBLOCK({
+        if (
+            [doc[@"type"] isEqualToString:ITEM_TYPE] &&
+            !doc[@"snapshotNumber"]
+        ) emit(doc[@"message"], nil);
+    }) version:@"1.0"];
+    
     CBLReplication* pullReplication = [self startReplicationsWithDatabase:database];
     NSMutableSet* channelsUsed = [NSMutableSet set];
     NSMutableArray* roomItems = [NSMutableArray array];
@@ -87,8 +106,9 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
           NSLog(@"Now syncing with %@", pullReplication.channels);
           
           NSString* room = doc[@"room"];
-          CBLQuery* query = [detailViewView createQuery];
-          query.keys = @[ room ];
+          CBLQuery* query = [roomSnapsView createQuery];
+          query.startKey = @[ room ];
+          query.endKey = @[ room, @{} ];
           [roomItems addObject:@{
               @"room": room,
               @"query": query,

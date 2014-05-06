@@ -8,6 +8,14 @@
 
 #import "CBMessageCell.h"
 
+
+@interface CBMessageCell ()
+
+@property (weak, nonatomic) UIImageView* snapView;
+
+@end
+
+
 @implementation CBMessageCell
 
 
@@ -20,12 +28,19 @@
         snap.clipsToBounds = YES;
         snap.frame = self.contentView.bounds;       // HACK: layout elsewhere?
         [self.contentView addSubview:snap];
-        
-        // TODO: assign actual snapshot via setter…
-        snap.image = [UIImage imageWithContentsOfFile:@"/Users/natevw/Desktop/Clients/Couchbase/CouchTalk-iOS/page/static/splash.jpg"];
+        self.snapView = snap;
     }
     return self;
 }
 
+- (NSString *)imagePath
+{
+    return nil;     // HACK: nobody needs this…
+}
+
+- (void)setImagePath:(NSString *)imagePath
+{
+    self.snapView.image = [UIImage imageWithContentsOfFile:imagePath];
+}
 
 @end
