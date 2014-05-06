@@ -15,7 +15,8 @@
 
 @interface CBDetailViewController ()
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;
-@property (copy) NSArray *messages;
+@property (strong, nonatomic) CBLLiveQuery *snapsQuery;
+@property (copy, nonatomic) NSArray *messages;
 - (void)configureView;
 @end
 
@@ -34,7 +35,21 @@
 
     if (self.masterPopoverController != nil) {
         [self.masterPopoverController dismissPopoverAnimated:YES];
-    }        
+    }
+}
+
+- (void)setSnapsQuery:(CBLLiveQuery *)newQuery {
+    if (_snapsQuery != newQuery) {
+        self.messages = @[];
+        [_snapsQuery removeObserver:self forKeyPath:@"rows"];
+        _snapsQuery = newQuery;
+        [_snapsQuery addObserver:self forKeyPath:@"rows" options:0 context:NULL];
+    }
+}
+
+- (void)setMessages:(NSArray *)newMessages {
+    _messages = [newMessages copy];
+    [self.messageGridView reloadData];
 }
 
 - (void)configureView
@@ -50,11 +65,18 @@
     }
     
     if (info[@"query"]) {
-        // TODO: use live updates
-        CBLQuery* query = info[@"query"];
+        self.snapsQuery = ((CBLQuery*)info[@"query"]).asLiveQuery;
+    } else {
+        self.snapsQuery = nil;
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if (object == self.snapsQuery) {
         NSMutableArray* messages = [NSMutableArray array];
-        for (CBLQueryRow* row in [query run:nil]) {
-            CBLDocument* doc = [query.database documentWithID:row.documentID];
+        for (CBLQueryRow* row in self.snapsQuery.rows) {
+            CBLDocument* doc = [self.snapsQuery.database documentWithID:row.documentID];
             NSURL* snapURL = [doc.currentRevision attachmentNamed:@"snapshot"].contentURL;
             [messages addObject:@{
                 @"message": doc[@"message"],
@@ -62,10 +84,7 @@
             }];
         };
         self.messages = messages;
-    } else {
-        self.messages = @[];
     }
-    [self.messageGridView reloadData];
 }
 
 - (void)viewDidLoad
@@ -73,6 +92,11 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     [self configureView];
+}
+
+- (void)dealloc
+{
+    [_snapsQuery removeObserver:self forKeyPath:@"rows"];
 }
 
 - (void)didReceiveMemoryWarning
