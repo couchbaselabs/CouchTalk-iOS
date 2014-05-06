@@ -75,8 +75,10 @@
             CFStringRef ifN = CFArrayGetValueAtIndex(ifaces, 0);
             wirelessIPv4 = interfaceIP4s[(__bridge id)ifN];
             CFDictionaryRef info = CNCopyCurrentNetworkInfo(ifN);
-            wirelessSSID = [(__bridge id)CFDictionaryGetValue(info, kCNNetworkInfoKeySSID) copy];
-            CFRelease(info);
+            if (info) {
+                wirelessSSID = [(__bridge id)CFDictionaryGetValue(info, kCNNetworkInfoKeySSID) copy];
+                CFRelease(info);
+            }
         }
         CFRelease(ifaces);
     }
