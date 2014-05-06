@@ -10,6 +10,7 @@
 		3E7E25BA190AEFCC005599CA /* CouchTalkRedirector.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E7E25B9190AEFCC005599CA /* CouchTalkRedirector.m */; };
 		3E7E25BD190AF222005599CA /* HTTPRedirectResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E7E25BC190AF222005599CA /* HTTPRedirectResponse.m */; };
 		3E9B2A321909CDAB007A2E2E /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E9B2A311909CDAB007A2E2E /* SystemConfiguration.framework */; };
+		3EF7D5C719185B97007F4412 /* CBMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EF7D5C619185B97007F4412 /* CBMessageCell.m */; };
 		7903AA1518E33DFD00AC321C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1418E33DFD00AC321C /* Foundation.framework */; };
 		7903AA1718E33DFD00AC321C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1618E33DFD00AC321C /* CoreGraphics.framework */; };
 		7903AA1918E33DFD00AC321C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1818E33DFD00AC321C /* UIKit.framework */; };
@@ -49,6 +50,8 @@
 		3E7E25BC190AF222005599CA /* HTTPRedirectResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPRedirectResponse.m; sourceTree = "<group>"; };
 		3E7E25BF190B0350005599CA /* HTTPMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HTTPMessage.h; sourceTree = "<group>"; };
 		3E9B2A311909CDAB007A2E2E /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		3EF7D5C519185B97007F4412 /* CBMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBMessageCell.h; sourceTree = "<group>"; };
+		3EF7D5C619185B97007F4412 /* CBMessageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBMessageCell.m; sourceTree = "<group>"; };
 		77C0F042599D444BBBBFAB16 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7903AA1118E33DFD00AC321C /* CouchTalk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CouchTalk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7903AA1418E33DFD00AC321C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -161,6 +164,8 @@
 				7903AA2D18E33DFD00AC321C /* CBMasterViewController.m */,
 				7903AA2F18E33DFD00AC321C /* CBDetailViewController.h */,
 				7903AA3018E33DFD00AC321C /* CBDetailViewController.m */,
+				3EF7D5C519185B97007F4412 /* CBMessageCell.h */,
+				3EF7D5C619185B97007F4412 /* CBMessageCell.m */,
 				7903AA3218E33DFD00AC321C /* Images.xcassets */,
 				7903AA1B18E33DFD00AC321C /* Supporting Files */,
 			);
@@ -332,6 +337,7 @@
 			files = (
 				7903AA2118E33DFD00AC321C /* main.m in Sources */,
 				7903AA2E18E33DFD00AC321C /* CBMasterViewController.m in Sources */,
+				3EF7D5C719185B97007F4412 /* CBMessageCell.m in Sources */,
 				3E7E25BD190AF222005599CA /* HTTPRedirectResponse.m in Sources */,
 				3E7E25BA190AEFCC005599CA /* CouchTalkRedirector.m in Sources */,
 				7903AA3118E33DFD00AC321C /* CBDetailViewController.m in Sources */,
