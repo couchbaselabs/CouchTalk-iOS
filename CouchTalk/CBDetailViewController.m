@@ -49,7 +49,6 @@
             @"Connect to WiFi: %@\nBrowse to: %@", info[@"SSID"], info[@"URL"]];
     }
     
-NSLog(@"INFO IS %@", info);
     if (info[@"query"]) {
         // TODO: use live updates
         CBLQuery* query = info[@"query"];
