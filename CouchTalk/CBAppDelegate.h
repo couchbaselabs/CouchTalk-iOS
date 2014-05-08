@@ -16,4 +16,13 @@
 
 @property (strong, nonatomic) CBMasterViewController *mainController;
 
+@property (copy, nonatomic) NSDictionary* wifi;
+
+@end
+
+
+@interface UIApplication (CBAppDelegate)
+
++ (CBAppDelegate *)cb_sharedDelegate;
+
 @end

@@ -9,6 +9,7 @@
 #import "CBMasterViewController.h"
 
 #import "CBDetailViewController.h"
+#import "CBAppDelegate.h"
 
 
 
@@ -34,6 +35,9 @@
 {
     [super viewDidLoad];
     
+    UIBarButtonItem *shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareServer:)];
+    self.navigationItem.rightBarButtonItem = shareButton;
+    
 	// Do any additional setup after loading the view, typically from a nib.
     /*
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
@@ -42,6 +46,16 @@
     self.navigationItem.rightBarButtonItem = addButton;
     */
     self.detailViewController = (CBDetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
+}
+
+- (IBAction)shareServer:(id)sender
+{
+    NSDictionary* wifi = [UIApplication cb_sharedDelegate].wifi;
+    NSString *message = [NSString stringWithFormat:@"Join my chat server on WiFi network: %@", wifi[@"SSID"]];
+    NSURL *link = wifi[@"URL"];
+    NSArray *items = @[message, link];
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:items applicationActivities:nil];
+    [self.navigationController presentViewController:activityVC animated:YES completion:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -97,7 +111,7 @@
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cell.userInteractionEnabled = YES;
     } else {
-        if (info) cell.textLabel.text = (indexPath.row) ? info[@"SSID"] : info[@"URL"];
+        if (info) cell.textLabel.text = (indexPath.row) ? info[@"SSID"] : [info[@"URL"] absoluteString];
         else cell.textLabel.text = @"No WiFi!";
         cell.accessoryType = UITableViewCellAccessoryNone;
         cell.userInteractionEnabled = NO;
@@ -106,7 +120,7 @@
 }
 
 - (id)detailItemForIndexPath:(NSIndexPath *)indexPath {
-    return (indexPath.section) ? self.objects[indexPath.row] : self.wifi;
+    return (indexPath.section) ? self.objects[indexPath.row] : [UIApplication cb_sharedDelegate].wifi;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath

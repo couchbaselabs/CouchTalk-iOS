@@ -175,14 +175,14 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     // TODO: add Reachability monitoring?
     NSDictionary* wifi = [CouchTalkRedirector networkInfo];
     if (wifi[@"IPv4"]) {
-        self.mainController.wifi = @{
+        self.wifi = @{
             @"SSID": wifi[@"SSID"],
-            @"URL": [NSString stringWithFormat:@"http://%@:%u", wifi[@"IPv4"], redirector.listeningPort],
+            @"URL": [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%u", wifi[@"IPv4"], redirector.listeningPort]],
             @"IPv4": wifi[@"IPv4"],
             @"port": @(redirector.listeningPort)
         };
     } else {
-        self.mainController.wifi = nil;
+        self.wifi = nil;
     }
 }
 
@@ -214,6 +214,15 @@ NSLog(@"applicationDidEnterBackground");
 {
 NSLog(@"applicationWillTerminate");
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+@end
+
+
+@implementation UIApplication (CBAppDelegate)
+
++ (CBAppDelegate *)cb_sharedDelegate {
+    return [UIApplication sharedApplication].delegate;
 }
 
 @end

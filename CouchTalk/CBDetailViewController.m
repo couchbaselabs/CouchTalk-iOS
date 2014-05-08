@@ -12,6 +12,7 @@
 #import <CouchbaseLite/CouchbaseLite.h>
 
 #import "CBMessageCell.h"
+#import "CBAppDelegate.h"
 
 @interface CBDetailViewController ()
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;
@@ -69,6 +70,9 @@
     } else {
         self.snapsQuery = nil;
     }
+    
+    UIBarButtonItem *shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareRoom:)];
+    self.navigationItem.rightBarButtonItem = shareButton;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -103,6 +107,17 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)shareRoom:(id)sender
+{
+    NSDictionary* wifi = [UIApplication cb_sharedDelegate].wifi;
+    NSDictionary* info = self.detailItem;
+    NSString *message = [NSString stringWithFormat:@"Join my chat room via WiFi network: %@", wifi[@"SSID"]];
+    NSURL *link = [NSURL URLWithString:[@"#" stringByAppendingString:info[@"room"]] relativeToURL:wifi[@"URL"]];
+    NSArray *items = @[message, link];
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:items applicationActivities:nil];
+    [self.navigationController presentViewController:activityVC animated:YES completion:nil];
 }
 
 
