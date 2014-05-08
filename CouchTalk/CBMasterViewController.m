@@ -94,10 +94,13 @@
     NSDictionary* info = [self detailItemForIndexPath:indexPath];
     if (indexPath.section) {
         cell.textLabel.text = info[@"room"];
-    } else if (info) {
-        cell.textLabel.text = (indexPath.row) ? info[@"SSID"] : info[@"URL"];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.userInteractionEnabled = YES;
     } else {
-        cell.textLabel.text = @"No WiFi!";
+        if (info) cell.textLabel.text = (indexPath.row) ? info[@"SSID"] : info[@"URL"];
+        else cell.textLabel.text = @"No WiFi!";
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        cell.userInteractionEnabled = NO;
     }
     return cell;
 }
