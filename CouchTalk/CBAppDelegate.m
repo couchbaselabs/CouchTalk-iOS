@@ -87,6 +87,25 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     CBLReplication* pullReplication = [self startReplicationsWithDatabase:database];
     NSMutableSet* channelsUsed = [NSMutableSet set];
     NSMutableArray* roomItems = [NSMutableArray array];
+    void (^subscribeToRoom)(NSString*) = ^(NSString* room) {
+        NSString* channel = [NSString stringWithFormat:@"room-%@", room];
+        if (channel && ![channelsUsed containsObject:channel]) {
+          [channelsUsed addObject:channel];
+          pullReplication.channels = [channelsUsed allObjects];
+          if (!pullReplication.running) [pullReplication start];
+          NSLog(@"Now syncing with %@", pullReplication.channels);
+          
+          CBLQuery* query = [roomSnapsView createQuery];
+          query.startKey = @[ room ];
+          query.endKey = @[ room, @{} ];
+          [roomItems addObject:@{
+              @"room": room,
+              @"query": query,
+              @"added": [NSDate date]
+          }];
+          self.mainController.objects = roomItems;
+        }
+    };
     [[NSNotificationCenter defaultCenter] addObserverForName:kCBLDatabaseChangeNotification object:database queue:nil usingBlock:^(NSNotification *note) {
       for (CBLDatabaseChange* change in note.userInfo[@"changes"]) {
         if (change.source) continue;    // handy! this means it was synced from remote (not that we'd get items from unsubscribed channels anyway though…)
@@ -98,26 +117,10 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
           }
         }
         */
-        NSString* channel = ([doc[@"type"] isEqualToString:ITEM_TYPE]) ? [NSString stringWithFormat:@"room-%@", doc[@"room"]] : nil;
-        if (channel && ![channelsUsed containsObject:channel]) {
-          [channelsUsed addObject:channel];
-          pullReplication.channels = [channelsUsed allObjects];
-          if (!pullReplication.running) [pullReplication start];
-          NSLog(@"Now syncing with %@", pullReplication.channels);
-          
-          NSString* room = doc[@"room"];
-          CBLQuery* query = [roomSnapsView createQuery];
-          query.startKey = @[ room ];
-          query.endKey = @[ room, @{} ];
-          [roomItems addObject:@{
-              @"room": room,
-              @"query": query,
-              @"added": [NSDate date]
-          }];
-          self.mainController.objects = roomItems;
-        }
+        if ([doc[@"type"] isEqualToString:ITEM_TYPE]) subscribeToRoom(doc[@"room"]);
       }
     }];
+    subscribeToRoom(@"howto");
     
     [database setFilterNamed: @"app/roomItems" asBlock: FILTERBLOCK({
         // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/321
