@@ -80,7 +80,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return (section) ? _objects.count : 1;
+    return (section) ? _objects.count : 2;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -95,7 +95,7 @@
     if (indexPath.section) {
         cell.textLabel.text = info[@"room"];
     } else if (info) {
-        cell.textLabel.text = info[@"URL"]; 
+        cell.textLabel.text = (indexPath.row) ? info[@"SSID"] : info[@"URL"];
     } else {
         cell.textLabel.text = @"No WiFi!";
     }
