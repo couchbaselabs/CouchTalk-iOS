@@ -59,7 +59,11 @@
     NSDictionary* info = self.detailItem;
     if (!info) return;
     else if (info[@"room"]) {
-        self.detailDescriptionLabel.text = [NSString stringWithFormat:@"%@ first seen %@", info[@"room"], info[@"added"]];
+        NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
+        fmt.dateStyle = NSDateFormatterShortStyle;
+        fmt.timeStyle = NSDateFormatterShortStyle;
+        self.detailDescriptionLabel.text = [NSString stringWithFormat:@"Room first seen:\n%@", [fmt stringFromDate:info[@"added"]]];
+        self.navigationItem.title = info[@"room"];
     } else if (info[@"SSID"]) {
         self.detailDescriptionLabel.text = [NSString stringWithFormat:
             @"Connect to WiFi: %@\nBrowse to: %@", info[@"SSID"], info[@"URL"]];
