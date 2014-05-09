@@ -10,6 +10,7 @@
 
 #import <AQGridView/AQGridView.h>
 #import <CouchbaseLite/CouchbaseLite.h>
+#import <AVFoundation/AVFoundation.h>
 
 #import "CBMessageCell.h"
 #import "CBAppDelegate.h"
@@ -18,6 +19,7 @@
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;
 @property (strong, nonatomic) CBLLiveQuery *snapsQuery;
 @property (copy, nonatomic) NSArray *messages;
+@property (copy, nonatomic) NSURL *audioPlayback;
 - (void)configureView;
 @end
 
@@ -51,6 +53,15 @@
 - (void)setMessages:(NSArray *)newMessages {
     _messages = [newMessages copy];
     [self.messageGridView reloadData];
+}
+
+- (void)setAudioPlayback:(NSURL *)url {
+    // HACK: we're actually storing an AVAudioPlayer to the ivar! [getter presumed to be unused]
+    AVAudioPlayer* player = (id)_audioPlayback;
+    if (player) [player stop];
+    player = [[AVAudioPlayer alloc] initWithContentsOfURL:url fileTypeHint:AVFileTypeWAVE error:nil];
+    [player play];
+    _audioPlayback = (id)player;
 }
 
 - (void)configureView
@@ -155,9 +166,16 @@
 
 - (void)gridView:(AQGridView*)gridView didSelectItemAtIndex:(NSUInteger)index {
     (void)gridView;
-    // TODO: play message audio :-)
-    (void)index;
-NSLog(@"Clicked message %lu", (unsigned long)index);
+    
+    CBLView* messageAudioView = [self.snapsQuery.database viewNamed:@"app/audioItemsByMessage"];
+    CBLQuery* audioQuery = [messageAudioView createQuery];
+    audioQuery.keys = @[
+        self.messages[index][@"message"]
+    ];
+    for (CBLQueryRow* row in [audioQuery run:nil]) {
+        CBLDocument* doc = [audioQuery.database documentWithID:row.documentID];
+        self.audioPlayback = [doc.currentRevision attachmentNamed:@"audio"].contentURL;
+    }
 }
 
 

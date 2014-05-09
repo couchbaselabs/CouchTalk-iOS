@@ -76,7 +76,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         ], doc[@"message"]);
     }) version:@"1.0"];
     
-    CBLView* messageAudioView = [database viewNamed:@"initialSnapshotsByRoomAndTimestamp"];
+    CBLView* messageAudioView = [database viewNamed:@"app/audioItemsByMessage"];
     [messageAudioView setMapBlock: MAPBLOCK({
         if (
             [doc[@"type"] isEqualToString:ITEM_TYPE] &&
