@@ -83,7 +83,7 @@
         CFRelease(ifaces);
     }
     
-    if (!wirelessSSID) wirelessSSID = @"Unknown SSID";
+    if (!wirelessSSID) wirelessSSID = @"Please connect to WiFi";
     if (!wirelessIPv4) wirelessIPv4 = interfaceIP4s.allValues[0];       // TODO: array might be empty!
     
     return @{
