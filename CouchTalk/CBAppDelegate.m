@@ -15,7 +15,7 @@
 #import "CouchTalkRedirector.h"
 
 
-NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk-dev2";      // TODO: move into app's plist or something?
+NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk";      // TODO: move into app's plist or something?
 NSString* const ITEM_TYPE = @"com.couchbase.couchtalk.message-item";
 
 @implementation CBAppDelegate
