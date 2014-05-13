@@ -8,8 +8,21 @@
 
 #import <UIKit/UIKit.h>
 
+@class CBMasterViewController;
+
 @interface CBAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+
+@property (strong, nonatomic) CBMasterViewController *mainController;
+
+@property (copy, nonatomic) NSDictionary* wifi;
+
+@end
+
+
+@interface UIApplication (CBAppDelegate)
+
++ (CBAppDelegate *)cb_sharedDelegate;
 
 @end

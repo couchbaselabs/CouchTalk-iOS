@@ -3,431 +3,413 @@
  */
  /* global $ */
  /* global io */
-
+ 
 
 var
   connectAudio = require("../js/recorder").connectAudio,
-  getUserMedia = require("getusermedia"),
-  coax = require("coax");
+  getUserMedia = require("getusermedia");
 
-  module.exports.App = React.createClass({
-  propTypes : {
-    id : React.PropTypes.string.isRequired,
-  },
+exports._coaxModule = require("coax");      // HACK: for whatever reason build process doesn't let main.js require 'coax' directly…
+
+var ITEM_TYPE = 'com.couchbase.labs.couchtalk.message-item';
+
+exports.Index = React.createClass({
   getInitialState : function(){
-    // console.log($.fn.cookie("autoplay"), $.fn.cookie("selfDestruct"), $.fn.cookie("selfDestructTTL"))
-    var start = getQueryVariable("start");
-    var end = getQueryVariable("end");
-    // console.log(start, end)
+    return {goRoom : Math.random().toString(26).substr(2)}
+  },
+  onSubmit : function(e){
+    e.preventDefault();
+    document.location.hash = this.state.goRoom;
+    location.reload();
+  },
+  handleChange : function(e){
+    this.setState({goRoom: e.target.value});
+  },
+  render : function(){
+    return (<div id="splash">
+          <h2>Welcome to CouchTalk</h2>
+          <p>Enter the name of a room to join, or enter "howto" for instructions:</p>
+          <form onSubmit={this.onSubmit}>
+            <input type="text" size={40}
+            value={this.state.goRoom}
+            onChange={this.handleChange}/>
+            <button type="submit">Join</button>
+          </form>
+          <img src="splash.jpg"/>
+        </div>)
+  }
+});
+
+module.exports.App = React.createClass({
+  propTypes : {
+    db: React.PropTypes.func.isRequired,
+    room : React.PropTypes.string.isRequired,
+    client : React.PropTypes.string.isRequired,
+    snapshotInterval: React.PropTypes.number
+  },
+  getDefaultProps : function() {
     return {
-      recording: false,
-      messages : [],
-      session : "s:"+Math.random().toString(20),
-      autoplay : $.fn.cookie('autoplay') !== "false",
-      selfDestructTTL : parseInt($.fn.cookie('selfDestructTTL'), 10) || 300,
-      selfDestruct : $.fn.cookie('selfDestruct') === "true",
-      nowPlaying : false,
-      start : parseInt(start, 10),
-      end : parseInt(end, 10)
+      dbgLocalShortcut : false, // if enabled, images/audio can get broken
+      dbgDbSupportsSinceNow : false,
+      snapshotInterval : 250    // init as `Infinity` to disable
+    };
+  },
+  getInitialState : function () {
+    return {
+      recording : false,
+      autoplay : $.fn.cookie('autoplay') !== "0",
+      messages : $.extend([], {_byKey:Object.create(null)}),
+      loadedAll : false
+    };
+  },
+  componentWillMount : function () {
+    if (this.props.dbgDbSupportsSinceNow) this.monitorChanges();
+    else this.props.db.get(function (e,d) {
+      if (e) throw e;
+      this.monitorChanges(d.update_seq);
+    }.bind(this));
+  },
+  componentDidMount : function (rootNode) {
+    connectAudio(function(e, webcam) {
+      if (e) return reloadError(e);
+      this.setupSpacebarRecording();
+      this.setState({webcam : webcam, webcamStreamURL : window.URL.createObjectURL(webcam.stream)});
+    }.bind(this));
+  },
+  
+  changesOpts : function (more) {
+    function expando(prefix, string) {
+      // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/321
+      var params = {};
+      params[prefix] = string;
+      params[prefix+'LEN'] = string.length;
+      Array.prototype.forEach.call(string, function (s,i) {
+        params[''+prefix+i] = s.charCodeAt(0);
+      });
+      return params;
     }
+    return $.extend({
+      include_docs: true,
+      filter : 'app/roomItems',
+    }, expando('room', this.props.room), more || {});
   },
-  componentWillMount: function() {
-    var db = coax(location.origin + "/couchtalk");
-    db.changes(this.onChange);
-    window.coaxDb = db; //for debugging
-    this.setState({db : db})
+  handleChange : function (d) {
+    if (d.doc.type !== ITEM_TYPE || d.doc.room !== this.props.room) return;
+    else if (this.props.dbgLocalShortcut && d.doc.client === this.props.client) return;
+    else this.integrateItemIntoMessages(d.doc);
   },
-  gotMessage : function(message){
-    var messages = this.state.messages;
-    // console.log("message", message, messages.length)
-
-    if (message.snap) {
-      for (var i = messages.length - 1; i >= 0; i--) {
-        if (messages[i] && messages[i].snap && messages[i].snap.split(":")[0] === message.snap.split(":")[0]) {
-          break;
+  monitorChanges : function (seq) {
+    if (!arguments.length) seq = 'now';
+    this.props.db.changes(this.changesOpts({since:seq}), function (e,d) {
+      if (e) throw e;   // TODO: what?
+      this.handleChange(d);
+    }.bind(this));
+  },
+  loadAllMessages : function () {
+    var emptyMessages = $.extend([], {_byKey:Object.create(null)});     // HACK: this maintains order…
+    this.setState({loadedAll : true, messages : emptyMessages});
+    
+    // NOTE: we will have had some of these, but should be harmless to re-integrate…
+    this.props.db('_changes')(this.changesOpts()).get(function (e,d) {
+      if (e) throw e;
+      d.results.forEach(this.handleChange, this);
+    }.bind(this));
+  },
+  
+  integrateItemIntoMessages : function (doc) {
+    var messages = this.state.messages,
+        message = messages._byKey[doc.message];
+    if (!message) {
+      message = {
+        key: doc.message,
+        snaps: [],
+        audio: null
+      };
+      if (doc.client === this.props.client) {
+        // when recording, bump autoplay cursor up past our own message
+        this.state.messages.forEach(function (msg) {
+          msg.playing = false;
+          msg.lastPlayed = false;
+        });
+        message.lastPlayed = true;
+      }
+      messages.push(messages._byKey[message.key] = message);
+    }
+    
+    if ('snapshotNumber' in doc) {
+      if (doc.snapshotNumber === 'join') {
+        message.justJoining = true;
+        if (message.lastPlayed) {
+          // HACK: this triggers a scroll to the user's own joining snapshot!
+          message.lastPlayed = false;
+          message.playing = true;
         }
+        doc.snapshotNumber = 0;
       }
-      if (messages[i]) {
-        // exists in some form
-        $.extend(messages[i], message)
-      } else {
-        // check to see if there's a message with the keypress
-        if (message.keypressId) {
-          var findIndex = {};
-          this.messageForKeypress(message.keypressId, findIndex)
-          if (findIndex.i) {
-            $.extend(messages[findIndex.i], message)
-            i = findIndex.i
-          } else {
-            // first time, add it
-            messages.push(message)
-            i = messages.length-1;
-          }
-        } else {
-          // first time, add it
-          messages.push(message)
-          i = messages.length-1;
-        }
-
-      }
-      this.setState({messages : messages})
-      this.maybePlay(messages[i], i)
-    } else {
-      // console.log("no snap only keypressId", message)
+      message.snaps[doc.snapshotNumber] = [this.props.db.url, doc._id, 'snapshot'].join('/');
+    } else {    // assume it's the recording instead
+      message.audio = [this.props.db.url, doc._id, 'audio'].join('/');
     }
+    
+    this.setState({messages : messages});
   },
-  maybePlay : function(message, i) {
-    // console.log(this.state, message)
-    if (this.state.autoplay && this.state.nowPlaying === false) {
-      if (this.state.session !== message.session) {
-        this.playMessage(i)
-      }
-    }
-  },
-  listenForSpaceBar : function(){
-    // record while spacebar is down
-    window.onkeydown = function (e) {
-      var code = e.keyCode ? e.keyCode : e.which;
-      if (code === 32) { //spacebar
-        e.preventDefault()
-        this.startRecord("kp:"+Math.random().toString(20))
+  
+  setupSpacebarRecording : function () {
+    var spacebar = ' '.charCodeAt(0),
+        session = null;
+    window.onkeydown = function (evt) {
+      if (evt.repeat) return;
+      var key = evt.keyCode || evt.which;
+      if (key === spacebar) {
+        evt.preventDefault();
+        session = this.startRecording();
       }
     }.bind(this);
-    window.onkeyup = function (e) {
-      var code = e.keyCode ? e.keyCode : e.which;
-      if (code === 32) { // spacebar
-        this.stopRecord()
+    window.onkeyup = function (evt) {
+      var key = evt.keyCode || evt.which;
+      if (key === spacebar) {
+        this.stopRecording(session);
       }
     }.bind(this);
   },
-  startRecord : function(keypressId) {
-    if (this.state.recording) return;
-    // console.log("startRecord",keypressId)
-    this.state.recorder.record()
-    var counter = 0;
-    this.takeSnapshot(keypressId, counter)
-    var interval = setInterval(function(){
-      this.takeSnapshot(keypressId, counter++)
-    }.bind(this), 250)
-    var video = $("video")
-    video.addClass("recording")
-    video.data("keypressId", keypressId)
-    this.setState({recording : true, pictureInterval : interval});
-
-    this.state.db.post({
-      keypressId : keypressId,
-      session : this.state.session,
-      room : this.props.id
-    }, function(err, ok){
-      // ok.id is where we are working
-    })
+  
+  startRecording : function () {
+    if (this.state.recording) throw Error("Recording started while already in progress!");
+    
+    var session = {},
+        msgId = "msg:"+Math.random().toString(20),
+        picNo = 0;
+    session.messageId = msgId;
+    session.snapshotTimer = setInterval(function () {
+      this.saveSnapshot(msgId, picNo++)
+    }.bind(this), this.props.snapshotInterval);
+    this.saveSnapshot(msgId, picNo++);
+    this.state.webcam.record();
+    this.setState({recording : true});
+    return session;
   },
-  stopRecord : function() {
-    if (this.state.pictureInterval) clearInterval(this.state.pictureInterval)
-    if (!this.state.recording) {
-      return console.error("I thought I was recording!")
-    }
-    var video =  $("video"),
-      keypressId = video.data("keypressId"),
-      recorder = this.state.recorder;
-    recorder.stop()
-    video.removeClass("recording");
-    var message = this.messageForKeypress(keypressId);
-    if (message) {
-      delete message.snapdata;
-    }
-
-    recorder.exportMonoWAV(this.saveAudio.bind(this, keypressId))
-    recorder.clear()
-    this.setState({recording : false})
-    // console.log("stopped recording", keypressId)
+  stopRecording : function (session) {
+    if (!this.state.recording) throw Error("Recording stopped while not in progress!");
+    
+    clearInterval(session.snapshotTimer);
+    var recorder = this.state.webcam;
+    recorder.stop();
+    recorder.exportMonoWAV(this.saveAudio.bind(this, session.messageId));
+    recorder.clear();
+    this.setState({recording : false});
   },
-  saveAudio : function(keypressId, wav){
-    this.messageWithIdForKeypress(keypressId,
-      function(message){
-      var reader = new FileReader(),
-        postURL = "/audio/" + this.props.id + "/" + message.snap.split(":")[0] + "/" + keypressId;
-      if (this.state.selfDestruct) {
-        postURL+= "?selfDestruct="+this.state.selfDestructTTL;
-      }
-      reader.addEventListener("loadend", function() {
-        var parts = reader.result.split(/[,;:]/)
-        $.ajax({
-          type : "POST",
-          url : postURL,
-          contentType : parts[1],
-          data : parts[3],
-          success : function() {
-            // console.log("saved audio", message)
-          }
-        })
-      }.bind(this));
-      reader.readAsDataURL(wav);
-    }.bind(this))
+  
+  saveItemToRoom : function (fields, atts) {    // atts [optional] uses keys for name, expects data url in values
+    var item = $.extend({
+      _id : "msg:"+Math.random().toString(20),    // if we don't assign, short circuited local display gets into trouble
+      type : ITEM_TYPE,
+      room : this.props.room,
+      client : this.props.client,
+      timestamp : new Date().toISOString()
+    }, fields);
+    if (atts) item._attachments = Object.keys(atts).reduce(function (obj, name) {
+      var urlParts = atts[name].split(/[,;:]/);
+      obj[name] = {
+        content_type : urlParts[1],
+        data : urlParts[3]
+      };
+      return obj;
+    }, item._attachments || {});
+    this.props.db.post(item, function (e) {
+      if (e) throw e;
+    });
+    // also display locally right away [disabled for reliable snapshot URLs]
+    if (this.props.dbgLocalShortcut) this.integrateItemIntoMessages(item);
   },
-  takeSnapshot : function(keypressId, counter){
-    var rootNode = $(this.getDOMNode());
-    var canvas = rootNode.find("canvas")[0];
-    var video = rootNode.find("video")[0];
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, video.width*2, video.height*2);
-    this.saveSnapshot(canvas.toDataURL("image/jpeg"), keypressId, counter);
+  
+  saveSnapshot : function (msgId, picNo) {
+    var video = this.refs.localPreview.getDOMNode(),
+        ctx = this.refs.snapshotContext.getDOMNode().getContext('2d');
+    ctx.drawImage(video, 0,0, ctx.canvas.width,ctx.canvas.height);
+    
+    var snapshot = ctx.canvas.toDataURL("image/jpeg");
+    this.saveItemToRoom({
+      message : msgId,
+      snapshotNumber : picNo
+    }, {snapshot : snapshot});
   },
-  messageForKeypress : function(keypressId, index) {
+  
+  saveAudio : function (msgId, wav) {
+    var reader = new FileReader();
+    reader.readAsDataURL(wav);
+    reader.onerror = function () {
+      throw reader.error;
+    };
+    reader.onloadend = function () {
+      this.saveItemToRoom({
+        message : msgId
+      }, {audio : reader.result});
+    }.bind(this);
+  },
+  
+  manualPlayback : function (msgKey) {
     var messages = this.state.messages;
-    // console.log('messageForKeypress', keypressId, messages)
-    for (var i = messages.length - 1; i >= 0; i--) {
-      var m = messages[i];
-      if (m.keypressId == keypressId) {
-        if (index) {index.i = i;}
-        return m;
-      }
-    }
+    messages.forEach(function (msg) {
+      msg.playing = (msg.key === msgKey);
+      msg.lastPlayed = false;
+    });
+    this.setState({messages : messages});
   },
-  messageWithIdForKeypress : function(keypressId, cb, retries){
-    var message = this.messageForKeypress(keypressId);
-    retries = retries || 0;
-    if (!(message && message.snap)) { // we haven't got the id via socket.io
-      if (retries < 100) {
-        // console.log("wait for snap id for", keypressId, message, retries)
-        setTimeout(this.messageWithIdForKeypress.bind(this,
-          keypressId, cb, retries+1), 100*(retries+1))
-      } else {
-        console.error("too many retries", keypressId, message)
-      }
-    } else { // we are good
-      cb(message)
-    }
-  },
-  saveLocalSnapshot : function(png, keypressId){
+  
+  playbackFinished : function (msgKey) {
     var messages = this.state.messages;
-    var findIndex = {}
-    var existingMessage = this.messageForKeypress(keypressId, findIndex);
-    if (existingMessage) {
-      // console.log("update local snapshot", existingMessage)
-      messages[findIndex.i].snapdata = png;
-      this.setState({messages : messages});
-    } else {
-      var newMessage = {keypressId : keypressId, snapdata : png}
-      messages.push(newMessage)
-      // console.log("save new local snapshot", newMessage)
-      this.setState({messages : messages});
-    }
+    messages.forEach(function (msg) {
+      msg.playing = false;
+      msg.lastPlayed = (msg.key === msgKey);
+    });
+    this.setState({messages : messages});
   },
-  saveSnapshot : function(png, keypressId, counter){
-    // make locally available before saved on server
-    this.saveLocalSnapshot(png, keypressId)
-
-    // save on server as soon as we have an id
-    this.messageWithIdForKeypress(keypressId,
-      function(message){
-        // console.log("save pic", message)
-        var parts = png.split(/[,;:]/),
-          picId = message.snap.split(":")[0];
-        if (counter) {
-          picId += ":" + counter
+  
+  autoplayChanged : function (evt) {
+    var autoplay = evt.target.checked;
+    $.fn.cookie('autoplay', (autoplay) ? '1' : '0', {path : "/"});
+    this.setState({autoplay : autoplay});
+  },
+  
+  componentWillUpdate : function (nextProps, nextState) {
+    // BIG HACK: any time messages change we want to also sneak in any autoplay changes
+    if (!nextState.autoplay) return;
+    var messages = nextState.messages,
+        prevPlayed = null;
+    messages.forEach(function (msg) {
+      if (msg.lastPlayed) prevPlayed = msg;
+      else if (prevPlayed) {
+        if (msg.audio || msg.justJoining) {
+          prevPlayed.lastPlayed = false;
+          msg.playing = true;
         }
-        var postURL = "/snapshot/" + this.props.id + "/" + picId + "/" + keypressId;
-        if (this.state.selfDestruct) {
-          postURL+= "?selfDestruct="+this.state.selfDestructTTL;
-        }
-        $.ajax({
-          type : "POST",
-          url : postURL,
-          contentType : parts[1],
-          data : parts[3],
-          success : function(data) {
-            // console.log("saved snap", message)
-          }
-        })
-    }.bind(this))
-  },
-  pleasePlayMessage : function(i){
-    // console.log("pleasePlayMessage", i)
-    if (this.state.nowPlaying !== false) {
-      var rootNode = $(this.getDOMNode());
-      // play the audio from the beginning
-      var audio = rootNode.find("audio")[this.state.nowPlaying]
-      // console.log("should stop", audio)
-      audio.load() // fires ended event?
-    }
-    this.setState({nowPlaying : false})
-    this.playMessage(i)
-  },
-  playMessage : function(i){
-    // todo move to message, remove `i`
-    var message = this.state.messages[i];
-    if (!this.state.recording && message) {
-      if (message.audio) {
-        var rootNode = $(this.getDOMNode());
-        // play the audio from the beginning
-
-        var audio = rootNode.find("audio")[i]
-        audio.load()
-        audio.play()
-        message.played = true
-        // console.log(audio, audio.ended, audio.networkState)
-        setTimeout(function() {
-          // console.log(audio, audio.ended, audio.networkState)
-          if (audio.networkState != 1) {
-            this.playFinished(message)
-          }
-        }.bind(this),1000)
-
-        this.setState({
-          nowPlaying : i,
-          messages : this.state.messages})
-      } else {
-        this.playMessage(i+1)
+        prevPlayed = null;
       }
-    } else {
-      this.setState({nowPlaying : false})
-    }
+    });
   },
-  playFinished : function(message){
-    if (this.state.autoplay) {
-      // find the index of the current message in the messages array
-      // by snap. then play the next one
-      var messages = this.state.messages;
-      for (var i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].snap == message.snap) {
-          break;
-        }
-      }
-      this.playMessage(i + 1)
-    } else {
-      this.setState({nowPlaying : false})
-    }
-  },
-  setupAudioVideo : function(rootNode, recorder){
-    var video = $(rootNode).find("video")[0]
-    video.muted = true;
-    video.src = window.URL.createObjectURL(recorder.stream)
-  },
-  autoPlayChanged : function(e){
-    $.fn.cookie('autoplay', e.target.checked.toString(), {path : "/"});
-    this.setState({autoplay: e.target.checked})
-  },
-  loadConversation : function(start, end){
-    console.log("conversation view", start, end)
-    var room = this.props.id,
-      oldMessages = [], min = Math.min(start, end);
-    for (var i = end; i >= start; i--) {
-      oldMessages.unshift({
-        snap : ["snap",room,i].join("-"),
-        audio : ["snap",room,i,"audio"].join("-"),
-        image : true
-      })
-    }
-    this.setState({messages : oldMessages.concat(this.state.messages)})
-  },
-  loadEarlierMessages : function(start, end){
-    var room = this.props.id, oldest = this.state.messages[0],
-      before;
-    if (oldest && oldest.snap) {
-      before = parseInt(oldest.snap.split('-')[2], 10)
-    }
-    var oldMessages = [], min = Math.max(before - 10, 0)
-    for (var i = before - 1; i >= min; i--) {
-      oldMessages.unshift({
-        snap : ["snap",room,i].join("-"),
-        audio : ["snap",room,i,"audio"].join("-"),
-        image : true
-      })
-    }
-    this.setState({messages : oldMessages.concat(this.state.messages)})
-  },
-  componentDidMount : function(rootNode){
-    if (this.state.start && this.state.end) {
-      this.loadConversation(this.state.start, this.state.end)
-    }
-    connectAudio(function(error, recorder) {
-      if (error) {return reloadError(error)}
-      this.setupAudioVideo(rootNode, recorder)
-      this.listenForSpaceBar()
-      this.state.socket.emit("join", {
-        keypressId : this.state.session,
-        session : this.state.session,
-        room : this.props.id,
-        join : true
-      })
-      if (this.state.start && this.state.end && this.state.autoplay) {
-        this.playMessage(0)
-      }
-      setTimeout(function(){
-        this.takeSnapshot(this.state.session)
-      }.bind(this), 1000)
-      this.setState({recorder: recorder})
-    }.bind(this))
-  },
-  componentDidUpdate : function(oldProps, oldState){
-    var el, els = $(".room img.playing")
-    if (els[0]) {
-      el = els[0]
-    } else {
-      if (oldState.messages[oldState.messages.length-1] && (oldState.messages[oldState.messages.length-1].snap !==
-              this.state.messages[this.state.messages.length-1].snap)) {
-        els = $(".room img")
-        el = els[els.length-1]
-      }
-    } // todo check for did the user scroll recently
-    if (el) {el.scrollIntoView(true)}
-  },
-  selfDestructTTLChanged : function(e) {
-    $.fn.cookie('selfDestructTTL', e.target.value, {path : "/"});
-    this.setState({selfDestructTTL:e.target.value})
-  },
-  selfDestructChanged : function(e) {
-    $.fn.cookie('selfDestruct', e.target.checked.toString(), {path : "/"});
-    this.setState({selfDestruct:e.target.checked})
-  },
+  
   render : function() {
-    var url = location.origin + "/talk/" + this.props.id;
-    var recording = this.state.recording ?
+window.dbgMessages = this.state.messages;
+    var url = window.location;
+    var recording = (this.state.recording) ?
       <span className="recording">Recording.</span> :
       <span/>;
     var oldestKnownMessage = this.state.messages[0];
-    document.title = this.props.id + " - CouchTalk"
-    var beg = this.state.recorder ? "" : <h2>Smile! &uArr;</h2>;
+    document.title = this.props.room + " - CouchTalk"
+    var beg = (this.state.webcam) ? "" : <h2>Smile! &uArr;</h2>;
     return (
       <div className="room">
       <header>
         {beg}
-        <h4>Push to Talk <a href="http://www.couchbase.com/">Couchbase Demo</a></h4>
+        <h4>Push to Talk with <a href="http://mobile.couchbase.com/">Couchbase Mobile</a></h4>
         <p><strong>Hold down the space bar</strong> while you are talking to record.
           <em>All messages are public. </em>
         </p>
-        <video autoPlay width={160} height={120} />
-        <canvas style={{display : "none"}} width={320} height={240}/>
-        <label className="autoplay"><input type="checkbox" onChange={this.autoPlayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
+        <video ref="localPreview" autoPlay muted width={160} height={120} className={(this.state.recording) ? 'recording' : ''} src={this.state.webcamStreamURL}/>
+        <canvas ref="snapshotContext" style={{display : "none"}} width={320} height={240}/>
+        <label className="autoplay"><input type="checkbox" onChange={this.autoplayChanged} checked={this.state.autoplay}/> Auto-play</label> {recording}
         <br/>
-        <label className="destruct"><input type="checkbox" onChange={this.selfDestructChanged} checked={this.state.selfDestruct}/>Erase my messages after <input type="text" size={4} onChange={this.selfDestructTTLChanged} value={this.state.selfDestructTTL}/> seconds</label>
-
-        {(oldestKnownMessage && oldestKnownMessage.snap.split('-')[2] !== '0') && <p><a onClick={this.loadEarlierMessages}>Load earlier messages.</a></p>}
-
-        <aside>Invite people to join the conversation: <input className="shareLink" value={url}/> or <a href="/">Go to a new room.</a>
-        </aside>
-
-        <RecentRooms id={this.props.id}/>
-
+        
+        {!this.state.loadedAll && <p><a onClick={this.loadAllMessages}>Load all previous messages.</a></p>}
+        
+        <a href="#">Go to a new room.</a>
+                
         <aside><strong>1997 called: </strong> it wants you to know CouchTalk <a href="http://caniuse.com/#feat=stream">requires </a>
           <a href="http://www.mozilla.org/en-US/firefox/new/">Firefox</a> or <a href="https://www.google.com/intl/en/chrome/browser/">Chrome</a>.</aside>
       </header>
       <ul className="messages">
-        {this.state.messages.map(function(m, i) {
-          return <Message
-            message={m}
-            key={m.snap}
-            playing={this.state.nowPlaying === i}
-            playFinished={this.playFinished}
-            playMe={this.pleasePlayMessage.bind(this, i)}
-            />
+        {this.state.messages.map(function (m) {
+          return <Message message={m} key={m.key} onPlaybackRequested={this.manualPlayback} onPlaybackDone={this.playbackFinished} ref="testing"/>
         }, this)}
       </ul>
       </div>
       );
+  },
+  
+  componentDidUpdate : function () {
+    // HACK: send initial snapshot once webcam is connected
+    var video = this.refs.localPreview.getDOMNode();
+    if (video.src && !this._tookSnapshot) {
+      this._tookSnapshot = true;
+      setTimeout(function () {
+        this.saveSnapshot("hello:"+Math.random().toString(20), 'join');
+      }.bind(this), 250);
+    }
   }
-})
+});
+
+var Message = React.createClass({
+  propTypes : {
+    message: React.PropTypes.object.isRequired,
+    onPlaybackRequested: React.PropTypes.func,
+    onPlaybackDone: React.PropTypes.func
+  },
+  getInitialState : function () {
+    return {
+      percentProgress : 0
+    };
+  },
+  
+  requestPlayback : function () {
+    if (this.props.onPlaybackRequested) this.props.onPlaybackRequested(this.props.message.key);
+  },
+  notifyFinished : function () {
+    if (this.props.onPlaybackDone) this.props.onPlaybackDone(this.props.message.key);
+  },
+  
+  componentDidMount : function () {
+    var audio = this.refs.audio.getDOMNode();
+    audio.ontimeupdate = function () {
+      this.setState({percentProgress: audio.currentTime / audio.duration});
+    }.bind(this);
+    audio.onended = this.notifyFinished;
+    audio.onerror = function () {
+      //console.warn("AUDIO ERROR!", audio.error, audio);
+      if (audio.error.code === window.MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED && audio.src.indexOf('?') === -1) {
+        // WORKAROUND: https://github.com/couchbase/couchbase-lite-ios/issues/317
+        audio.src += "?nocache="+Math.random();
+        audio.oncanplay = function () {
+          audio.oncanplay = null;
+          //console.log("Worked around audio error by cache busting.");
+          this.forceUpdate();
+        }.bind(this);
+      }
+    }.bind(this);
+    this.componentDidUpdate();      // otherwise it doesn't get called after initial render
+  },
+  
+  render : function () {
+    var message = this.props.message,
+        snapIdx = Math.round(this.state.percentProgress * (message.snaps.length - 1)),
+        classes = [];
+    if (message.justJoining) classes.push('joined');
+    else if (!message.audio) classes.push('noAudio');
+    if (message.playing) classes.push('playing');
+    if (message.lastPlayed) classes.push('played');
+    return (<li key={message.key}>
+        <img src={message.snaps[snapIdx]} className={classes.join(' ')} onClick={this.requestPlayback}/>
+        <audio preload="auto" src={message.audio} ref="audio"/>
+      </li>);
+  },
+  
+  componentDidUpdate : function () {
+    // we can't use this.refs in render, so must update playback state separately
+    var message = this.props.message,
+        audio = this.refs.audio.getDOMNode(),
+        audioPlaying = !(audio.paused || audio.ended);
+    if (message.playing && message.justJoining) {
+      audio.parentNode.scrollIntoView();
+      this.notifyFinished();
+    } else if (message.playing && !audioPlaying) {
+      audio.parentNode.scrollIntoView();
+      if (audio.currentTime) audio.currentTime = 0;
+      audio.play();
+    } else if (!message.playing && audioPlaying) {
+      audio.pause();
+      audio.currentTime = 0;      // go back to first thumbail
+    }
+  }
+});
 
 
 var RecentRooms = React.createClass({
@@ -475,8 +457,7 @@ var RecentRooms = React.createClass({
         <h4>Recent Rooms <a onClick={this.clearHistory}>(Clear)</a></h4>
         <ul>{
           this.state.sortedRooms.map(function(room){
-            console.log(room[0], room[1])
-            var href = "/talk/"+room[0]
+            var href = "#"+room[0]
             return <li key={room[0]}><a href={href}>{room[0]}</a></li>
           }, this)
         }</ul>
@@ -485,122 +466,6 @@ var RecentRooms = React.createClass({
       return <aside/>
     }
   },
-})
-
-exports.Index = React.createClass({
-  getInitialState : function(){
-    return {goRoom : Math.random().toString(26).substr(2)}
-  },
-  onSubmit : function(e){
-    e.preventDefault();
-    document.location = "/talk/" + this.state.goRoom;
-  },
-  handleChange : function(e){
-    this.setState({goRoom: e.target.value});
-  },
-  render : function(){
-    return (<div id="splash">
-          <h2>Welcome to CouchTalk</h2>
-          <p>Enter the name of a room to join:</p>
-          <form onSubmit={this.onSubmit}>
-            <input type="text" size={40}
-            value={this.state.goRoom}
-            onChange={this.handleChange}/>
-            <button type="submit">Join</button>
-          </form>
-          <img src="splash.jpg"/>
-          <RecentRooms/>
-        </div>)
-  }
-})
-
-
-var Message = React.createClass({
-  getInitialState : function(){
-    return {showing : 0}
-  },
-  componentDidMount : function(){
-    var audio = $(this.getDOMNode()).find("audio")[0];
-    audio.addEventListener('ended', function(){
-      this.stopAnimation()
-      this.props.playFinished(this.props.message)
-    }.bind(this))
-    audio.addEventListener('playing', function(){
-      this.animateImages()
-    }.bind(this))
-    var deck = $(this.getDOMNode()).find("img.ondeck")[0];
-    deck.addEventListener("load", function(e) {
-      // console.log("deck load", this, e)
-      $(this).parent().find("img.messImg")[0].src = this.src;
-    })
-  },
-//   shouldComponentUpdate : function(nextProps) {
-//     // console.log(nextProps.message)
-// warning
-//     return ["snap","audio","played","playing","image"].filter(function(k){
-//       console.log(k, nextProps.message[k], this.props.message[k])
-//       return nextProps.message[k] !== this.props.message[k]
-//     }.bind(this)).length !== 0
-// // return true;
-//   },
-  getMax : function(){
-    var split = this.props.message.snap.split(":");
-    if (split[1]) {
-      return parseInt(split[1], 10) || 0;
-    } else { return 0}
-  },
-  getSnapURL : function(){
-    var url = "/snapshot/" + this.props.message.snap.split(":")[0];
-    var number =  this.props.message.audio ? this.state.showing : this.getMax();
-    if (number) {
-      url += ":" + number
-    }
-    return url;
-  },
-  animateImages : function() {
-    var animateHandle = setInterval(function(){
-      this.setState({showing : this.state.showing+1})
-    }.bind(this), 250)
-    this.setState({animateHandle : animateHandle})
-  },
-  stopAnimation: function(){
-    clearInterval(this.state.animateHandle)
-    this.setState({showing : 0})
-  },
-  render : function() {
-    // console.log("Render", this.props.message)
-    var snapURL, backupURL;
-    if (this.props.message.image) {
-      snapURL = this.getSnapURL();
-      backupURL = "/snapshot/" + this.props.message.snap.split(":")[0];
-    }
-    if (this.props.message.snapdata) {
-      snapURL = this.props.message.snapdata;
-    }
-    var audioURL = "/audio/" + this.props.message.audio;
-    var className = "messImg";
-
-    if (!this.props.message.audio) {
-      if (!this.props.message.join) {
-        className += " noAudio"
-      }
-    } else {
-      if (this.props.playing) {
-        className += " playing"
-      } else {
-        if (this.props.message.played) {
-          className += " played"
-        } else {
-          className += " unplayed"
-        }
-      }
-    }
-    return (<li key={this.props.message.keypressId || this.props.message.snap.split(":")[0]}>
-        <img className={className} src={backupURL} onClick={this.props.playMe}/>
-        <img className="ondeck" src={snapURL}/>
-        <audio src={audioURL}/>
-      </li>)
-  }
 })
 
 function reloadError(error) {

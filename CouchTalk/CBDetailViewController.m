@@ -8,8 +8,18 @@
 
 #import "CBDetailViewController.h"
 
+#import <AQGridView/AQGridView.h>
+#import <CouchbaseLite/CouchbaseLite.h>
+#import <AVFoundation/AVFoundation.h>
+
+#import "CBMessageCell.h"
+#import "CBAppDelegate.h"
+
 @interface CBDetailViewController ()
 @property (strong, nonatomic) UIPopoverController *masterPopoverController;
+@property (strong, nonatomic) CBLLiveQuery *snapsQuery;
+@property (copy, nonatomic) NSArray *messages;
+@property (copy, nonatomic) NSURL *audioPlayback;
 - (void)configureView;
 @end
 
@@ -28,15 +38,71 @@
 
     if (self.masterPopoverController != nil) {
         [self.masterPopoverController dismissPopoverAnimated:YES];
-    }        
+    }
+}
+
+- (void)setSnapsQuery:(CBLLiveQuery *)newQuery {
+    if (_snapsQuery != newQuery) {
+        self.messages = @[];
+        [_snapsQuery removeObserver:self forKeyPath:@"rows"];
+        _snapsQuery = newQuery;
+        [_snapsQuery addObserver:self forKeyPath:@"rows" options:0 context:NULL];
+    }
+}
+
+- (void)setMessages:(NSArray *)newMessages {
+    _messages = [newMessages copy];
+    [self.messageGridView reloadData];
+}
+
+- (void)setAudioPlayback:(NSURL *)url {
+    // HACK: we're actually storing an AVAudioPlayer to the ivar! [getter presumed to be unused]
+    AVAudioPlayer* player = (id)_audioPlayback;
+    if (player) [player stop];
+    player = [[AVAudioPlayer alloc] initWithContentsOfURL:url fileTypeHint:AVFileTypeWAVE error:nil];
+    [player play];
+    _audioPlayback = (id)player;
 }
 
 - (void)configureView
 {
     // Update the user interface for the detail item.
+    NSDictionary* info = self.detailItem;
+    if (!info) return;
+    else if (info[@"room"]) {
+        NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
+        fmt.dateStyle = NSDateFormatterShortStyle;
+        fmt.timeStyle = NSDateFormatterShortStyle;
+        self.detailDescriptionLabel.text = [NSString stringWithFormat:@"Room first seen:\n%@", [fmt stringFromDate:info[@"added"]]];
+        self.navigationItem.title = info[@"room"];
+    } else if (info[@"SSID"]) {
+        self.detailDescriptionLabel.text = [NSString stringWithFormat:
+            @"Connect to WiFi: %@\nBrowse to: %@", info[@"SSID"], info[@"URL"]];
+    }
+    
+    if (info[@"query"]) {
+        self.snapsQuery = ((CBLQuery*)info[@"query"]).asLiveQuery;
+    } else {
+        self.snapsQuery = nil;
+    }
+    
+    UIBarButtonItem *shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareRoom:)];
+    self.navigationItem.rightBarButtonItem = shareButton;
+}
 
-    if (self.detailItem) {
-        self.detailDescriptionLabel.text = [self.detailItem description];
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if (object == self.snapsQuery) {
+        NSMutableArray* messages = [NSMutableArray array];
+        for (CBLQueryRow* row in self.snapsQuery.rows) {
+            CBLDocument* doc = [self.snapsQuery.database documentWithID:row.documentID];
+            NSURL* snapURL = [doc.currentRevision attachmentNamed:@"snapshot"].contentURL;
+            [messages addObject:@{
+                @"message": doc[@"message"],
+                @"snapshotPath": [snapURL path]
+            }];
+        };
+        self.messages = messages;
     }
 }
 
@@ -47,11 +113,71 @@
     [self configureView];
 }
 
+- (void)dealloc
+{
+    [_snapsQuery removeObserver:self forKeyPath:@"rows"];
+}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+- (IBAction)shareRoom:(id)sender
+{
+    NSDictionary* wifi = [UIApplication cb_sharedDelegate].wifi;
+    NSDictionary* info = self.detailItem;
+    NSString *message = [NSString stringWithFormat:@"Join my chat room via WiFi network: %@", wifi[@"SSID"]];
+    NSURL *link = [NSURL URLWithString:[@"#" stringByAppendingString:info[@"room"]] relativeToURL:wifi[@"URL"]];
+    NSArray *items = @[message, link];
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:items applicationActivities:nil];
+    [self.navigationController presentViewController:activityVC animated:YES completion:nil];
+}
+
+
+#pragma mark — Messages view
+
+// see http://sapandiwakar.in/getting-started-with-aqgridview/
+// and http://code.tutsplus.com/tutorials/design-build-a-small-business-app-aqgridview--mobile-9651
+
+- (NSUInteger)numberOfItemsInGridView:(AQGridView *)gridView
+{
+    (void)gridView;
+    return [self.messages count];
+}
+
+- (AQGridViewCell *)gridView:(AQGridView *)gridView cellForItemAtIndex:(NSUInteger)index
+{
+    CBMessageCell* cell = (id)[gridView dequeueReusableCellWithIdentifier:@"Message"];
+    if (!cell) {
+        cell = [[CBMessageCell alloc]
+            initWithFrame: CGRectMake(0.0, 0.0, 64.0, 64.0) reuseIdentifier: @"Message"];
+    }
+    cell.imagePath = self.messages[index][@"snapshotPath"];
+    return cell;
+}
+
+- (CGSize)portraitGridCellSizeForGridView:(AQGridView *)gridView
+{
+    (void)gridView;
+    return CGSizeMake(64.0, 64.0);
+}
+
+- (void)gridView:(AQGridView*)gridView didSelectItemAtIndex:(NSUInteger)index {
+    (void)gridView;
+    
+    CBLView* messageAudioView = [self.snapsQuery.database viewNamed:@"app/audioItemsByMessage"];
+    CBLQuery* audioQuery = [messageAudioView createQuery];
+    audioQuery.keys = @[
+        self.messages[index][@"message"]
+    ];
+    for (CBLQueryRow* row in [audioQuery run:nil]) {
+        CBLDocument* doc = [audioQuery.database documentWithID:row.documentID];
+        self.audioPlayback = [doc.currentRevision attachmentNamed:@"audio"].contentURL;
+    }
+}
+
 
 #pragma mark - Split view
 

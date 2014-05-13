@@ -9,6 +9,9 @@
 #import "CBMasterViewController.h"
 
 #import "CBDetailViewController.h"
+#import "CBAppDelegate.h"
+
+
 
 @interface CBMasterViewController () {
     NSMutableArray *_objects;
@@ -26,21 +29,50 @@
     [super awakeFromNib];
 }
 
+
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    UIBarButtonItem *shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareServer:)];
+    self.navigationItem.rightBarButtonItem = shareButton;
+    
 	// Do any additional setup after loading the view, typically from a nib.
+    /*
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
 
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
     self.navigationItem.rightBarButtonItem = addButton;
+    */
     self.detailViewController = (CBDetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
+}
+
+- (IBAction)shareServer:(id)sender
+{
+    NSDictionary* wifi = [UIApplication cb_sharedDelegate].wifi;
+    NSString *message = [NSString stringWithFormat:@"Join my chat server on WiFi network: %@", wifi[@"SSID"]];
+    NSURL *link = wifi[@"URL"];
+    NSArray *items = @[message, link];
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:items applicationActivities:nil];
+    [self.navigationController presentViewController:activityVC animated:YES completion:nil];
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)setObjects:(NSArray*)objects
+{
+    _objects = [objects mutableCopy];
+    [self.tableView reloadData];
+}
+
+- (NSArray*)objects
+{
+    return _objects;
 }
 
 - (void)insertNewObject:(id)sender
@@ -57,60 +89,44 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 1;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return _objects.count;
+    return (section) ? _objects.count : 2;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    // TODO: these should come from localized strings file…
+    return (section) ? @"Active rooms:" : @"Connection info:";
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-
-    NSDate *object = _objects[indexPath.row];
-    cell.textLabel.text = [object description];
+    NSDictionary* info = [self detailItemForIndexPath:indexPath];
+    if (indexPath.section) {
+        cell.textLabel.text = info[@"room"];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.userInteractionEnabled = YES;
+    } else {
+        if (info) cell.textLabel.text = (indexPath.row) ? info[@"SSID"] : [info[@"URL"] absoluteString];
+        else cell.textLabel.text = @"No WiFi!";
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        cell.userInteractionEnabled = NO;
+    }
     return cell;
 }
 
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+- (id)detailItemForIndexPath:(NSIndexPath *)indexPath {
+    return (indexPath.section) ? self.objects[indexPath.row] : [UIApplication cb_sharedDelegate].wifi;
 }
-
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        [_objects removeObjectAtIndex:indexPath.row];
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
-    }
-}
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-        NSDate *object = _objects[indexPath.row];
-        self.detailViewController.detailItem = object;
+        self.detailViewController.detailItem = [self detailItemForIndexPath:indexPath];
     }
 }
 
@@ -118,7 +134,7 @@
 {
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSDate *object = _objects[indexPath.row];
+        NSDictionary* object = [self detailItemForIndexPath:indexPath];
         [[segue destinationViewController] setDetailItem:object];
     }
 }

@@ -8,9 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface CBDetailViewController : UIViewController <UISplitViewControllerDelegate>
+#import <AQGridView/AQGridView.h>
+
+@interface CBDetailViewController : UIViewController <UISplitViewControllerDelegate, AQGridViewDataSource, AQGridViewDelegate>
 
 @property (strong, nonatomic) id detailItem;
 
 @property (weak, nonatomic) IBOutlet UILabel *detailDescriptionLabel;
+@property (weak, nonatomic) IBOutlet AQGridView *messageGridView;
+
 @end
