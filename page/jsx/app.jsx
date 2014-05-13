@@ -11,7 +11,7 @@ var
 
 exports._coaxModule = require("coax");      // HACK: for whatever reason build process doesn't let main.js require 'coax' directly…
 
-var ITEM_TYPE = 'com.couchbase.labs.couchtalk.message-item';
+var ITEM_TYPE = 'com.couchbase.couchtalk.message-item';
 
 exports.Index = React.createClass({
   getInitialState : function(){
