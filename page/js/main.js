@@ -5,6 +5,11 @@ var CouchTalk = require("../jsx/app.jsx"),
 $(function () {
   var room = location.hash.slice(1),
       db_url = location.origin + '/' + location.pathname.split('/')[1];
+
+  window.onhashchange = function(){
+    location.reload()
+  }
+
   if (room) {
     React.renderComponent(
       CouchTalk.App({
