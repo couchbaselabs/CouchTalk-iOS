@@ -15,8 +15,9 @@
 #import "CouchTalkRedirector.h"
 
 
+
 NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk";      // TODO: move into app's plist or something?
-NSString* const ITEM_TYPE = @"com.couchbase.couchtalk.message-item";
+NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
 @implementation CBAppDelegate
 
@@ -112,7 +113,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.couchtalk.message-item";
         CBLDocument* doc = [database existingDocumentWithID:change.documentID];
         /* NOTE: the following code expects this Sync Gateway callback to be installed
         function(doc) {
-          if (doc.room) {
+          if (doc.type === 'com.couchbase.labs.couchtalk.message-item') {
             channel('room-'+doc.room);
           }
         }
