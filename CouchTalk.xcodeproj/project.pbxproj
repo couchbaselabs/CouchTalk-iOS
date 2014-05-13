@@ -261,6 +261,9 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Chris Anderson";
 				TargetAttributes = {
+					7903AA1018E33DFD00AC321C = {
+						DevelopmentTeam = N2Q372V7W2;
+					};
 					7903AA3718E33DFD00AC321C = {
 						TestTargetID = 7903AA1018E33DFD00AC321C;
 					};
@@ -487,13 +490,17 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EF07155C6DE749BFA012411A /* Pods.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CouchTalk/CouchTalk-Prefix.pch";
 				INFOPLIST_FILE = "CouchTalk/CouchTalk-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "E33B200D-6EE9-4F67-ADBB-2B8B88E088B7";
 				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
@@ -503,13 +510,17 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EF07155C6DE749BFA012411A /* Pods.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CouchTalk/CouchTalk-Prefix.pch";
 				INFOPLIST_FILE = "CouchTalk/CouchTalk-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "E33B200D-6EE9-4F67-ADBB-2B8B88E088B7";
 				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
