@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv='Content-type' content='text/html; charset=utf-8'>
+    <title>CouchTalk with Couchbase</title>
+    <link rel="stylesheet" href="base.css"  inline="true" />
+    <link rel="stylesheet" href="gh-fork-ribbon.css"  inline="true" />
+  </head>
+  <body>
+    <div id="container">
+      <div id="splash">
+        <h2>Welcome to CouchTalk</h2>
+        <img src="splash.jpg"/>
+      </div>
+    </div>
+    <div class="github-fork-ribbon-wrapper right-bottom">
+        <div class="github-fork-ribbon">
+            <a href="https://github.com/couchbaselabs/CouchTalk-iOS">Fork me on GitHub</a>
+        </div>
+    </div>
+    <script src="vendor.min.js"></script>
+    <script src="bundle.js"></script>
+  </body>
+</html>
