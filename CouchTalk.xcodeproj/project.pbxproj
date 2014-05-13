@@ -28,6 +28,8 @@
 		7903AA3C18E33DFD00AC321C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7903AA1818E33DFD00AC321C /* UIKit.framework */; };
 		7903AA4418E33DFD00AC321C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7903AA4218E33DFD00AC321C /* InfoPlist.strings */; };
 		7903AA4618E33DFD00AC321C /* CouchTalkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7903AA4518E33DFD00AC321C /* CouchTalkTests.m */; };
+		798490C91921DAF2008C76E3 /* couchtalk attachments in Resources */ = {isa = PBXBuildFile; fileRef = 798490C71921DAF2008C76E3 /* couchtalk attachments */; };
+		798490CA1921DAF2008C76E3 /* couchtalk.cblite in Resources */ = {isa = PBXBuildFile; fileRef = 798490C81921DAF2008C76E3 /* couchtalk.cblite */; };
 		D9B4B41B7CB94E4B884DBDA0 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 77C0F042599D444BBBBFAB16 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -77,6 +79,8 @@
 		7903AA4118E33DFD00AC321C /* CouchTalkTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CouchTalkTests-Info.plist"; sourceTree = "<group>"; };
 		7903AA4318E33DFD00AC321C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7903AA4518E33DFD00AC321C /* CouchTalkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CouchTalkTests.m; sourceTree = "<group>"; };
+		798490C71921DAF2008C76E3 /* couchtalk attachments */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "couchtalk attachments"; sourceTree = "<group>"; };
+		798490C81921DAF2008C76E3 /* couchtalk.cblite */ = {isa = PBXFileReference; lastKnownFileType = file; path = couchtalk.cblite; sourceTree = "<group>"; };
 		EF07155C6DE749BFA012411A /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -170,6 +174,8 @@
 				7903AA3018E33DFD00AC321C /* CBDetailViewController.m */,
 				3EF7D5C519185B97007F4412 /* CBMessageCell.h */,
 				3EF7D5C619185B97007F4412 /* CBMessageCell.m */,
+				798490C71921DAF2008C76E3 /* couchtalk attachments */,
+				798490C81921DAF2008C76E3 /* couchtalk.cblite */,
 				7903AA3218E33DFD00AC321C /* Images.xcassets */,
 				7903AA1B18E33DFD00AC321C /* Supporting Files */,
 			);
@@ -285,7 +291,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				7903AA2B18E33DFD00AC321C /* Main_iPad.storyboard in Resources */,
+				798490C91921DAF2008C76E3 /* couchtalk attachments in Resources */,
 				7903AA3318E33DFD00AC321C /* Images.xcassets in Resources */,
+				798490CA1921DAF2008C76E3 /* couchtalk.cblite in Resources */,
 				7903AA2818E33DFD00AC321C /* Main_iPhone.storyboard in Resources */,
 				7903AA1F18E33DFD00AC321C /* InfoPlist.strings in Resources */,
 			);
