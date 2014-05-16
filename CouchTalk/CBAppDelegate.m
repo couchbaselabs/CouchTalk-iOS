@@ -173,7 +173,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         );
     })];
     
-    CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 59840];
+    CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port:0];
     BOOL ok = [_listener start: &error];
     if (ok) {
         UInt16 actualPort = _listener.port;  // the actual TCP port it's listening on
@@ -183,8 +183,11 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     }
     
     CouchTalkRedirector* redirector = [[CouchTalkRedirector alloc] init];
-    [redirector setType:@"_http._tcp."];
+    redirector.type = @"_http._tcp.";
     //[redirector setPort:8080];            // pros: easy to remember/type, cons: what if already in use?
+    redirector.targetPort = _listener.port;
+    redirector.targetPath = @"/couchtalk/_design/app/index.html";
+    
     ok = [redirector start:&error];
     if (!ok) {
         NSLog(@"Couldn't start redirect helper: %@", error);

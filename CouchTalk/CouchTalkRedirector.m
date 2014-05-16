@@ -25,11 +25,13 @@
 
 - (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path
 {
+    CouchTalkRedirector* server = (id)self->config.server;
     NSString* scheme = (self.isSecureServer) ? @"https" : @"http";      // NOTE: assumes CBL has been set up for HTTPS too, if we were
     NSString* origHost = self->request.allHeaderFields[@"Host"];
-    NSString* origPort = [NSString stringWithFormat:@"%u", self->config.server.listeningPort];
-    NSString* host = [origHost stringByReplacingOccurrencesOfString:origPort withString:@"59840"];
-    NSString* target = [NSString stringWithFormat:@"%@://%@/couchtalk/_design/app/index.html", scheme, host];
+    NSString* origPort = [NSString stringWithFormat:@"%u", server.listeningPort];
+    NSString* trgtPort = [NSString stringWithFormat:@"%u", server.targetPort];
+    NSString* host = [origHost stringByReplacingOccurrencesOfString:origPort withString:trgtPort];
+    NSString* target = [NSString stringWithFormat:@"%@://%@%@", scheme, host, server.targetPath];
     return [[HTTPRedirectResponse alloc] initWithPath:target];
 }
 
