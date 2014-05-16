@@ -24,6 +24,9 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 @property (nonatomic) NSTimer *wifiPoller;
 @property (nonatomic) BOOL monitoringWiFi;
 @property (nonatomic) CouchTalkRedirector *redirector;
+
+@property (nonatomic) CBLReplication *pushReplication;
+@property (nonatomic) CBLReplication *pullReplication;
 @end
 
 @implementation CBAppDelegate
@@ -46,18 +49,6 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     [self setupCouchbaseListener];
     
     return YES;
-}
-
-- (CBLReplication*) startReplicationsWithDatabase:(CBLDatabase *)database {
-    NSURL* centralDatabase = [NSURL URLWithString:HOST_URL];
-    CBLReplication* pushReplication = [database createPushReplication:centralDatabase];
-    pushReplication.continuous = YES;
-    [pushReplication start];
-    
-    CBLReplication* pullReplication = [database createPullReplication:centralDatabase];
-    pullReplication.continuous = YES;
-    // instead of starting, we let caller start once it needs at least one channel
-    return pullReplication;
 }
 
 - (void) setupCouchbaseListener {
@@ -112,16 +103,24 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         ) emit(doc[@"message"], nil);
     }) version:@"1.0"];
     
-    CBLReplication* pullReplication = [self startReplicationsWithDatabase:database];
+    
+    NSURL* centralDatabase = [NSURL URLWithString:HOST_URL];
+    self.pushReplication = [database createPushReplication:centralDatabase];
+    self.pushReplication.continuous = YES;
+    [self.pushReplication start];
+    self.pullReplication = [database createPullReplication:centralDatabase];
+    self.pullReplication.continuous = YES;
+    // instead of starting, we wait until it has at least one channel (to avoid grabbing all!)
+    
     NSMutableSet* channelsUsed = [NSMutableSet set];
     NSMutableArray* roomItems = [NSMutableArray array];
     void (^subscribeToRoom)(NSString*) = ^(NSString* room) {
         NSString* channel = [NSString stringWithFormat:@"room-%@", room];
         if (channel && ![channelsUsed containsObject:channel]) {
           [channelsUsed addObject:channel];
-          pullReplication.channels = [channelsUsed allObjects];
-          if (!pullReplication.running) [pullReplication start];
-          NSLog(@"Now syncing with %@", pullReplication.channels);
+          self.pullReplication.channels = [channelsUsed allObjects];
+          if (!self.pullReplication.running) [self.pullReplication start];
+          NSLog(@"Now syncing with %@", self.pullReplication.channels);
           
           CBLQuery* query = [roomSnapsView createQuery];
           query.startKey = @[ room ];
