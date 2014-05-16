@@ -55,6 +55,11 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
 - (void) setupCouchbaseListener {
     CBLManager* manager = [CBLManager sharedInstance];
+    
+    // WORKAROUND: only user-created data is allowed in iCloud; simply omit everything
+    NSURL* storage = [NSURL fileURLWithPath:manager.directory isDirectory:YES];
+    [storage setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
+    
     NSError *error;
     CBLDatabase* database = [manager existingDatabaseNamed:@"couchtalk" error:&error];
     
