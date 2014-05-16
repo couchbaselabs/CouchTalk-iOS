@@ -19,7 +19,7 @@ exports.Index = React.createClass({
   },
   onSubmit : function(e){
     e.preventDefault();
-    document.location += "#" + this.state.goRoom;
+    document.location.hash = this.state.goRoom;
     location.reload();
   },
   handleChange : function(e){
@@ -28,7 +28,7 @@ exports.Index = React.createClass({
   render : function(){
     return (<div id="splash">
           <h2>Welcome to CouchTalk</h2>
-          <p>Enter the name of a room to join:</p>
+          <p>Enter the name of a room to join, or enter "howto" for instructions:</p>
           <form onSubmit={this.onSubmit}>
             <input type="text" size={40}
             value={this.state.goRoom}
@@ -36,7 +36,6 @@ exports.Index = React.createClass({
             <button type="submit">Join</button>
           </form>
           <img src="splash.jpg"/>
-          <RecentRooms/>
         </div>)
   }
 });
@@ -302,7 +301,7 @@ window.dbgMessages = this.state.messages;
       <div className="room">
       <header>
         {beg}
-        <h4>Push to Talk <a href="http://www.couchbase.com/">Couchbase Demo</a></h4>
+        <h4>Push to Talk with <a href="http://mobile.couchbase.com/">Couchbase Mobile</a></h4>
         <p><strong>Hold down the space bar</strong> while you are talking to record.
           <em>All messages are public. </em>
         </p>
@@ -313,11 +312,8 @@ window.dbgMessages = this.state.messages;
         
         {!this.state.loadedAll && <p><a onClick={this.loadAllMessages}>Load all previous messages.</a></p>}
         
-        <aside>Invite people to join the conversation: <input className="shareLink" value={url} readOnly/> or <a href="/">Go to a new room.</a>
-        </aside>
-        
-        <RecentRooms id={this.props.id}/>
-        
+        <a href="#">Go to a new room.</a>
+                
         <aside><strong>1997 called: </strong> it wants you to know CouchTalk <a href="http://caniuse.com/#feat=stream">requires </a>
           <a href="http://www.mozilla.org/en-US/firefox/new/">Firefox</a> or <a href="https://www.google.com/intl/en/chrome/browser/">Chrome</a>.</aside>
       </header>
@@ -461,7 +457,7 @@ var RecentRooms = React.createClass({
         <h4>Recent Rooms <a onClick={this.clearHistory}>(Clear)</a></h4>
         <ul>{
           this.state.sortedRooms.map(function(room){
-            var href = "/talk/"+room[0]
+            var href = "#"+room[0]
             return <li key={room[0]}><a href={href}>{room[0]}</a></li>
           }, this)
         }</ul>

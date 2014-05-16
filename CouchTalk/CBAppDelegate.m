@@ -15,7 +15,8 @@
 #import "CouchTalkRedirector.h"
 
 
-NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk-dev2";      // TODO: move into app's plist or something?
+
+NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk";      // TODO: move into app's plist or something?
 NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
 @implementation CBAppDelegate
@@ -55,7 +56,22 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 - (void) setupCouchbaseListener {
     CBLManager* manager = [CBLManager sharedInstance];
     NSError *error;
-    CBLDatabase* database = [manager databaseNamed:@"couchtalk" error:&error];
+    CBLDatabase* database = [manager existingDatabaseNamed:@"couchtalk" error:&error];
+    
+    if (!database) {
+        NSString* cannedDbPath = [[NSBundle mainBundle] pathForResource: @"couchtalk"
+                                                                 ofType: @"cblite"];
+        NSString* cannedAttPath = [[NSBundle mainBundle] pathForResource: @"couchtalk attachments"
+                                                                  ofType: @""];
+        BOOL ok = [manager replaceDatabaseNamed: @"couchtalk"
+                                 withDatabaseFile: cannedDbPath
+                                  withAttachments: cannedAttPath
+                                            error: &error];
+        NSAssert(ok, @"Failed to install database: %@", error);
+        database = [manager existingDatabaseNamed: @"couchtalk"
+                                                           error: &error];
+        NSAssert(database, @"Failed to open database");
+    }
     
     CBLView* detailViewView = [database viewNamed:@"snapshotsByRoom"];
     [detailViewView setMapBlock: MAPBLOCK({
