@@ -97,9 +97,15 @@
     return (section) ? _objects.count : 2;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
     // TODO: these should come from localized strings file…
     return (section) ? @"Active rooms:" : @"Connection info:";
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
+{
+    return (section) ? nil : @"NOTE: Some wireless access points block direct communication between devices, even when they are all connected to the same network!";
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
