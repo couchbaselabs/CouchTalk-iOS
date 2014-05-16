@@ -14,6 +14,8 @@
 
 @property (strong, nonatomic) CBDetailViewController *detailViewController;
 
-@property (copy) NSArray* objects;
+@property (copy, nonatomic) NSArray* objects;
+
+- (void)updateWiFi;
 
 @end

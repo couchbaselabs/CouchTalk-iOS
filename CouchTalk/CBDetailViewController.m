@@ -59,7 +59,11 @@
     // HACK: we're actually storing an AVAudioPlayer to the ivar! [getter presumed to be unused]
     AVAudioPlayer* player = (id)_audioPlayback;
     if (player) [player stop];
-    player = [[AVAudioPlayer alloc] initWithContentsOfURL:url fileTypeHint:AVFileTypeWAVE error:nil];
+    if ([AVAudioPlayer instancesRespondToSelector:@selector(initWithContentsOfURL:fileTypeHint:error:)]) {
+        player = [[AVAudioPlayer alloc] initWithContentsOfURL:url fileTypeHint:AVFileTypeWAVE error:nil];
+    } else {
+        player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
+    }
     [player play];
     _audioPlayback = (id)player;
 }
@@ -183,7 +187,7 @@
 
 - (void)splitViewController:(UISplitViewController *)splitController willHideViewController:(UIViewController *)viewController withBarButtonItem:(UIBarButtonItem *)barButtonItem forPopoverController:(UIPopoverController *)popoverController
 {
-    barButtonItem.title = NSLocalizedString(@"Master", @"Master");
+    barButtonItem.title = NSLocalizedString(@"Rooms", @"Rooms");
     [self.navigationItem setLeftBarButtonItem:barButtonItem animated:YES];
     self.masterPopoverController = popoverController;
 }

@@ -19,6 +19,16 @@
 NSString* const HOST_URL = @"http://sync.couchbasecloud.com/couchtalk";      // TODO: move into app's plist or something?
 NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 
+
+@interface CBAppDelegate ()
+@property (nonatomic) NSTimer *wifiPoller;
+@property (nonatomic) BOOL monitoringWiFi;
+@property (nonatomic) CouchTalkRedirector *redirector;
+
+@property (nonatomic) CBLReplication *pushReplication;
+@property (nonatomic) CBLReplication *pullReplication;
+@end
+
 @implementation CBAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -41,20 +51,13 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     return YES;
 }
 
-- (CBLReplication*) startReplicationsWithDatabase:(CBLDatabase *)database {
-    NSURL* centralDatabase = [NSURL URLWithString:HOST_URL];
-    CBLReplication* pushReplication = [database createPushReplication:centralDatabase];
-    pushReplication.continuous = YES;
-    [pushReplication start];
-    
-    CBLReplication* pullReplication = [database createPullReplication:centralDatabase];
-    pullReplication.continuous = YES;
-    // instead of starting, we let caller start once it needs at least one channel
-    return pullReplication;
-}
-
 - (void) setupCouchbaseListener {
     CBLManager* manager = [CBLManager sharedInstance];
+    
+    // WORKAROUND: only user-created data is allowed in iCloud; simply omit everything
+    NSURL* storage = [NSURL fileURLWithPath:manager.directory isDirectory:YES];
+    [storage setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
+    
     NSError *error;
     CBLDatabase* database = [manager existingDatabaseNamed:@"couchtalk" error:&error];
     
@@ -100,16 +103,24 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         ) emit(doc[@"message"], nil);
     }) version:@"1.0"];
     
-    CBLReplication* pullReplication = [self startReplicationsWithDatabase:database];
+    
+    NSURL* centralDatabase = [NSURL URLWithString:HOST_URL];
+    self.pushReplication = [database createPushReplication:centralDatabase];
+    self.pushReplication.continuous = YES;
+    [self.pushReplication start];
+    self.pullReplication = [database createPullReplication:centralDatabase];
+    self.pullReplication.continuous = YES;
+    // instead of starting, we wait until it has at least one channel (to avoid grabbing all!)
+    
     NSMutableSet* channelsUsed = [NSMutableSet set];
     NSMutableArray* roomItems = [NSMutableArray array];
     void (^subscribeToRoom)(NSString*) = ^(NSString* room) {
         NSString* channel = [NSString stringWithFormat:@"room-%@", room];
         if (channel && ![channelsUsed containsObject:channel]) {
           [channelsUsed addObject:channel];
-          pullReplication.channels = [channelsUsed allObjects];
-          if (!pullReplication.running) [pullReplication start];
-          NSLog(@"Now syncing with %@", pullReplication.channels);
+          self.pullReplication.channels = [channelsUsed allObjects];
+          if (!self.pullReplication.running) [self.pullReplication start];
+          NSLog(@"Now syncing with %@", self.pullReplication.channels);
           
           CBLQuery* query = [roomSnapsView createQuery];
           query.startKey = @[ room ];
@@ -168,7 +179,7 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         );
     })];
     
-    CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port: 59840];
+    CBLListener* _listener = [[CBLListener alloc] initWithManager: manager port:0];
     BOOL ok = [_listener start: &error];
     if (ok) {
         UInt16 actualPort = _listener.port;  // the actual TCP port it's listening on
@@ -178,53 +189,73 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
     }
     
     CouchTalkRedirector* redirector = [[CouchTalkRedirector alloc] init];
-    [redirector setType:@"_http._tcp."];
-    [redirector setPort:8080];            // pros: easy to remember/type, cons: what if already in use?
+    redirector.type = @"_http._tcp.";
+    //[redirector setPort:8080];            // pros: easy to remember/type, cons: what if already in use?
+    redirector.targetPort = _listener.port;
+    redirector.targetPath = @"/couchtalk/_design/app/index.html";
+    
     ok = [redirector start:&error];
     if (!ok) {
         NSLog(@"Couldn't start redirect helper: %@", error);
     } else {
         NSLog(@"Redirector listening on %u", redirector.listeningPort);
     }
-    CFRetain((__bridge CFTypeRef)redirector);       // TODO/HACK: need a better way to keep this around
-    
-    // TODO: add Reachability monitoring?
+    self.redirector = redirector;
+}
+
+- (void)upateWiFi:(__unused NSTimer *)timer
+{
     NSDictionary* wifi = [CouchTalkRedirector networkInfo];
     if (wifi[@"IPv4"]) {
+        UInt16 port = self.redirector.listeningPort;
         self.wifi = @{
             @"SSID": wifi[@"SSID"],
-            @"URL": [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%u", wifi[@"IPv4"], redirector.listeningPort]],
+            @"URL": [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%u", wifi[@"IPv4"], port]],
             @"IPv4": wifi[@"IPv4"],
-            @"port": @(redirector.listeningPort)
+            @"port": @(port)
         };
     } else {
         self.wifi = nil;
     }
+    [self.mainController updateWiFi];
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application
+- (void)setMonitoringWiFi:(BOOL)monitoringWiFi
 {
-NSLog(@"applicationWillResignActive");
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-}
-
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-NSLog(@"applicationDidEnterBackground");
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    if (monitoringWiFi == _monitoringWiFi) return;
+    if (monitoringWiFi) {
+        NSTimer* poller = [NSTimer scheduledTimerWithTimeInterval:5.0 target:self selector:@selector(upateWiFi:) userInfo:nil repeats:YES];
+        self.wifiPoller = poller;
+        [poller fire];
+    } else {
+        [self.wifiPoller invalidate];
+    }
+    _monitoringWiFi = monitoringWiFi;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    NSLog(@"applicationDidBecomeActive");
+    self.monitoringWiFi = YES;
 }
+
+- (void)applicationWillResignActive:(UIApplication *)application
+{
+    NSLog(@"applicationWillResignActive");
+    self.monitoringWiFi = NO;
+}
+
+
+// TODO: start/pause replications here?
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    NSLog(@"applicationWillEnterForeground");
+}
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+    NSLog(@"applicationDidEnterBackground");
+}
+
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {

@@ -12,4 +12,8 @@
 
 + (NSDictionary*)networkInfo;       // including this here for laziness…
 
+@property (nonatomic) UInt16 targetPort;
+@property (nonatomic, copy) NSString *targetPath;
+
+
 @end
