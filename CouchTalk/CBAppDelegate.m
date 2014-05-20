@@ -119,7 +119,11 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
         if (channel && ![channelsUsed containsObject:channel]) {
           [channelsUsed addObject:channel];
           self.pullReplication.channels = [channelsUsed allObjects];
-          if (!self.pullReplication.running) [self.pullReplication start];
+            if (!self.pullReplication.running) {
+                [self.pullReplication start];
+            } else {
+                [self.pullReplication restart];
+            }
           NSLog(@"Now syncing with %@", self.pullReplication.channels);
           
           CBLQuery* query = [roomSnapsView createQuery];
