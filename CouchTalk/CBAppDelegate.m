@@ -241,12 +241,14 @@ NSString* const ITEM_TYPE = @"com.couchbase.labs.couchtalk.message-item";
 {
     NSLog(@"applicationDidBecomeActive");
     self.monitoringWiFi = YES;
+    application.idleTimerDisabled = YES;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     NSLog(@"applicationWillResignActive");
     self.monitoringWiFi = NO;
+    application.idleTimerDisabled = NO;
 }
 
 
