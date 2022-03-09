@@ -1,3 +1,5 @@
+⚠️ This repo is obsolete.  It was developed using a version of Couchbase Lite that reached end of life years ago.
+
 # CouchTalk-iOS
 
 This is a port of <https://github.com/couchbaselabs/couchtalk-node> to work with [Couchbase Lite](http://www.couchbase.com/mobile).
